@@ -1,17 +1,14 @@
-@'
 # Virtual environment
 venv/
 
 # Python cache
 __pycache__/
 
-# Media + generated files
+# Local media + generated files
 assets/
 downloads/
 outputs/
 
-# IDE / OS
-.vscode/
+# OS / editor junk
 .DS_Store
 Thumbs.db
-'@ | Out-File -Encoding UTF8 .gitignore
