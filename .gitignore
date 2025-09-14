@@ -1,0 +1,17 @@
+@'
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+
+# Media + generated files
+assets/
+downloads/
+outputs/
+
+# IDE / OS
+.vscode/
+.DS_Store
+Thumbs.db
+'@ | Out-File -Encoding UTF8 .gitignore
