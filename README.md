@@ -30,8 +30,8 @@ Meme Generator/
 ## Setup & Installation
 
 # Clone the repo:
-git clone https://github.com/<GITHUB_USERNAME>/<REPO_NAME>.git
-cd <REPO_NAME>
+git clone https://github.com/harshit-git404/ai-meme-generator.git
+cd ai-meme-generator
 
 # Create a virtual environment and activate it:
 python -m venv venv
