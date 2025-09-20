@@ -20,6 +20,8 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 # -----------------------------
 OUTPUT_FOLDER = "outputs"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+DOWNLOAD_FOLDER = "downloads"
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 # -----------------------------
 # Global BLIP model
@@ -29,25 +31,28 @@ processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base").to(device)
 
 # -----------------------------
-# Helper: Download YouTube video
+# Helper: Download YouTube video (video + audio, merged to mp4)
 # -----------------------------
-def download_video(url, download_folder="downloads"):
+def download_video(url, download_folder=DOWNLOAD_FOLDER):
     base_name = re.sub(r'[<>:"/\\|?*]', '_', url.split("youtu")[-1])
     filename = os.path.join(download_folder, f"{base_name}.mp4")
     counter = 1
+    # ensure unique filename
     while os.path.exists(filename):
         filename = os.path.join(download_folder, f"{base_name}({counter}).mp4")
         counter += 1
 
+    # Request best video+audio and merge into mp4
     ydl_opts = {
-        'format': 'best',
+        'format': 'bestvideo+bestaudio/best',
+        'merge_output_format': 'mp4',
         'outtmpl': filename,
         'quiet': True,
         'noplaylist': True
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
-    logging.info(f"Downloaded video to {filename}")
+    logging.info(f"Downloaded video (with audio) to {filename}")
     return filename
 
 # -----------------------------
@@ -109,10 +114,11 @@ def generate_captions(video_path, threshold=30.0, max_new_tokens=20, max_scenes=
 # Main
 # -----------------------------
 def process_visual(input_source, threshold=30.0, max_new_tokens=20, max_scenes=None):
+    # If input_source is a YouTube URL, download video+audio and return path.
     if re.match(r'https?://(www\.)?youtu', input_source):
         video_path = download_video(input_source)
     else:
-        video_path = input_source  # already handled by pipeline
+        video_path = input_source  # already a local file path handed by pipeline
 
     return generate_captions(video_path, threshold, max_new_tokens, max_scenes)
 
