@@ -4,6 +4,7 @@ import cv2
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
 import subprocess
+import datetime
 
 # Paths
 OUTPUTS_DIR = "outputs"
@@ -13,7 +14,10 @@ FINAL_DIR = os.path.join(OUTPUTS_DIR, "final_outputs")
 MEME_JSON = os.path.join(OUTPUTS_DIR, "meme_moments.json")
 FONT_PATH = os.path.join("fonts", "Impact.ttf")  # make sure font file exists
 
-os.makedirs(FINAL_DIR, exist_ok=True)
+# Make unique folder for this run
+timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+RUN_DIR = os.path.join(FINAL_DIR, f"run_{timestamp}")
+os.makedirs(RUN_DIR, exist_ok=True)
 
 with open(MEME_JSON, "r", encoding="utf-8") as f:
     meme_moments = json.load(f)
@@ -35,7 +39,6 @@ def add_caption_to_image(image_path, caption, output_path):
             font = ImageFont.load_default()
             break
 
-        # Use textbbox instead of textsize
         bbox = draw.textbbox((0, 0), caption.upper(), font=font)
         w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
 
@@ -48,7 +51,6 @@ def add_caption_to_image(image_path, caption, output_path):
     wrapped = textwrap.fill(caption.upper(), width=max_chars)
     lines = wrapped.split("\n")
 
-    # Draw text at top with outline
     y = 10
     for line in lines:
         bbox = draw.textbbox((0, 0), line, font=font)
@@ -65,9 +67,6 @@ def add_caption_to_image(image_path, caption, output_path):
 # Add caption to video and keep audio
 # ==============================
 def add_caption_to_video(video_path, caption, output_path):
-    import subprocess
-    import tempfile
-
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print(f"[❌] Could not open video: {video_path}")
@@ -78,7 +77,7 @@ def add_caption_to_video(video_path, caption, output_path):
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
-    temp_output = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False).name
+    temp_output = os.path.join(RUN_DIR, "temp_video.mp4")
     out = cv2.VideoWriter(temp_output, fourcc, fps, (width, height))
 
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -91,9 +90,9 @@ def add_caption_to_video(video_path, caption, output_path):
 
     # Dynamically calculate font scale so widest line fits
     longest_line = max(lines, key=len)
-    for fs in reversed(range(1, 500)):  # try font scales from big to small
+    for fs in reversed(range(1, 500)):
         (text_w, text_h), _ = cv2.getTextSize(longest_line, font, fs / 100, thickness)
-        if text_w <= width - 20:  # 10px margin on each side
+        if text_w <= width - 20:
             font_scale = fs / 100
             break
 
@@ -102,7 +101,7 @@ def add_caption_to_video(video_path, caption, output_path):
         if not ret:
             break
 
-        y = 50  # start a little below top
+        y = 50
         for line in lines:
             (text_w, text_h), _ = cv2.getTextSize(line, font, font_scale, thickness)
             x = (width - text_w) // 2
@@ -144,11 +143,11 @@ for i, moment in enumerate(meme_moments, start=1):
     # Image
     frame_file = os.path.join(FRAMES_DIR, f"meme_{i}.jpg")
     if os.path.exists(frame_file):
-        output_img = os.path.join(FINAL_DIR, f"final_meme_{i}.jpg")
+        output_img = os.path.join(RUN_DIR, f"final_meme_{i}.jpg")
         add_caption_to_image(frame_file, caption, output_img)
 
     # Video
     clip_file = os.path.join(CLIPS_DIR, f"meme_{i}.mp4")
     if os.path.exists(clip_file):
-        output_vid = os.path.join(FINAL_DIR, f"final_meme_{i}.mp4")
+        output_vid = os.path.join(RUN_DIR, f"final_meme_{i}.mp4")
         add_caption_to_video(clip_file, caption, output_vid)
