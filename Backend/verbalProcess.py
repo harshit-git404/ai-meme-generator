@@ -2,6 +2,7 @@
 import os
 import re
 import json
+import glob
 import whisper
 import yt_dlp
 import logging
@@ -15,7 +16,9 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 # Folders
 # -----------------------------
 OUTPUT_FOLDER = "outputs"
+DOWNLOAD_FOLDER = "downloads"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 # -----------------------------
 # Global Whisper model
@@ -25,10 +28,25 @@ logging.info(f"Loading default Whisper model ({GLOBAL_MODEL_SIZE})...")
 global_model = whisper.load_model(GLOBAL_MODEL_SIZE)
 
 # -----------------------------
-# Helper: Download YouTube audio
+# Helper: Download YouTube audio OR reuse existing video download
 # -----------------------------
-def download_audio(url, download_folder="downloads"):
+def download_audio_or_get_existing(url, download_folder=DOWNLOAD_FOLDER):
+    """
+    If there's already a matching mp4 in downloads/ for this URL (e.g. downloaded by visualProcess),
+    reuse it. Otherwise download audio (mp4) and return path. Also return a boolean indicating
+    whether this function performed a download (True) or reused existing (False).
+    """
     base_name = re.sub(r'[<>:"/\\|?*]', '_', url.split("youtu")[-1])
+
+    # Look for any existing mp4 that starts with this base_name
+    pattern = os.path.join(download_folder, f"{base_name}*.mp4")
+    existing = glob.glob(pattern)
+    if existing:
+        chosen = max(existing, key=os.path.getmtime)
+        logging.info(f"Found existing downloaded file, reusing: {chosen}")
+        return chosen, False
+
+    # No existing file: download audio-only (will be mp4 container)
     filename = os.path.join(download_folder, f"{base_name}.mp4")
     counter = 1
     while os.path.exists(filename):
@@ -44,7 +62,7 @@ def download_audio(url, download_folder="downloads"):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([url])
     logging.info(f"Downloaded audio to {filename}")
-    return filename
+    return filename, True
 
 # -----------------------------
 # Helper: Transcribe audio
@@ -88,15 +106,32 @@ def save_transcript_json(file_path, segments, source_type="local"):
 # Main function
 # -----------------------------
 def process_verbal(input_source, model_size="base", fp16=False):
+    """
+    If input_source is a YouTube URL: try to reuse an existing downloads/<base>*.mp4 file.
+    If not found, download audio-only. After transcription, delete the audio-only file
+    if we created it (so there is only one saved video file ultimately).
+    """
+    downloaded_temp = False
+
     if re.match(r'https?://(www\.)?youtu', input_source):
-        file_path = download_audio(input_source)
+        file_path, downloaded_temp = download_audio_or_get_existing(input_source)
         source_type = "youtube"
     else:
         file_path = input_source  # already handled by pipeline
         source_type = "local"
 
     segments = transcribe_audio(file_path, model_size=model_size, fp16=fp16)
-    return save_transcript_json(file_path, segments, source_type)
+    result = save_transcript_json(file_path, segments, source_type)
+
+    # If we downloaded an audio-only temp file in this function, delete it (we keep only the original video file)
+    if downloaded_temp:
+        try:
+            os.remove(file_path)
+            logging.info(f"Deleted temporary audio file: {file_path}")
+        except Exception as e:
+            logging.warning(f"Could not delete temporary file {file_path}: {e}")
+
+    return result
 
 # -----------------------------
 # CLI for testing

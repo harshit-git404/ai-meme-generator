@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fun AI Meme Uploader</title>
+<style>
+/* --- keep your previous CSS unchanged --- */
+body { font-family: 'Comic Sans MS', cursive, sans-serif; margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fceabb; position: relative; }
+h1 { z-index: 10; font-size: 3rem; color: #fff; text-shadow: 2px 2px #ff6f61; margin-bottom: 30px; animation: bounce 2s infinite; }
+@keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+.bubble { position: absolute; border-radius: 50%; opacity: 0.6; animation: float 20s infinite; }
+@keyframes float { 0% { transform: translateY(0) translateX(0) rotate(0deg); } 50% { transform: translateY(-800px) translateX(50px) rotate(180deg); } 100% { transform: translateY(0) translateX(0) rotate(360deg); } }
+.upload-container { position: relative; background: rgba(255, 255, 230, 0.9); border-radius: 25px; padding: 25px; margin-bottom: 25px; width: 350px; text-align: center; border: 3px dashed #ff6f51; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 5; transition: all 0.3s ease; }
+.upload-container:hover { transform: scale(1.05); box-shadow: 0 12px 25px rgba(0,0,0,0.4); border-color: #6a82fb; }
+.upload-container.dragover { border-color: #6a82fb; background: rgba(224, 247, 250, 0.9); }
+input[type="text"], input[type="file"] { width: 90%; padding: 12px; margin-top: 10px; margin-bottom: 10px; border-radius: 10px; border: 2px solid #ff6f61; outline: none; transition: all 0.3s ease; font-size: 1rem; }
+input[type="text"]:focus, input[type="file"]:focus { border-color: #6a82fb; box-shadow: 0 0 10px #6a82fb; }
+button { padding: 12px 25px; background: linear-gradient(45deg, #ff6f61, #ffb347); color: #fff; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); background: linear-gradient(45deg, #6a82fb, #fc5c7d); }
+.file-name { margin-top: 10px; color: #00c853; font-weight: bold; }
+p, span, label { font-weight: bold; color: #333; }
+#memeGallery { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 30px; }
+#memeGallery img { width: 200px; border: 2px solid #ff6f61; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.3s ease; }
+#memeGallery img:hover { transform: scale(1.05); }
+</style>
+</head>
+<body>
+
+<h1>AI Meme Generator Uploader</h1>
+
+<div class="upload-container">
+  <label for="youtubeLink">YouTube Link / Paste URL:</label>
+  <input type="text" id="youtubeLink" placeholder="Paste YouTube link here">
+</div>
+
+<div class="upload-container" id="videoUpload">
+  <p>Video Here</p>
+  <input type="file" id="videoFile" accept="video/*">
+  <div class="file-name" id="videoName"></div>
+</div>
+
+<div class="upload-container" id="photoUpload">
+   <p>Photo Here</p>
+   <input type="file" id="photoFile" accept="image/*">
+   <div class="file-name" id="photoName"></div>
+</div>
+
+<button id="submitBtn">Upload</button>
+
+<div id="memeGallery"></div>
+
+<!-- Floating bubbles -->
+<div class="bubble" style="width: 80px; height: 80px; background: #ff6f61; left: 10%; animation-duration: 25s;"></div>
+<div class="bubble" style="width: 50px; height: 50px; background: #6a82fb; left: 50%; animation-duration: 20s;"></div>
+<div class="bubble" style="width: 100px; height: 100px; background: #ffb456; left: 80%; animation-duration: 30s;"></div>
+<div class="bubble" style="width: 60px; height: 60px; background: #00c853; left: 30%; animation-duration: 18s;"></div>
+
+<script>
+const videoUpload = document.getElementById('videoUpload');
+const videoFile = document.getElementById('videoFile');
+const videoName = document.getElementById('videoName');
+
+videoUpload.addEventListener('dragover', e => { e.preventDefault(); videoUpload.classList.add('dragover'); });
+videoUpload.addEventListener('dragleave', () => { videoUpload.classList.remove('dragover'); });
+videoUpload.addEventListener('drop', e => {
+  e.preventDefault();
+  videoUpload.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('video/')) { videoFile.files = e.dataTransfer.files; videoName.textContent = file.name; }
+});
+videoFile.addEventListener('change', () => { if(videoFile.files[0]) videoName.textContent = videoFile.files[0].name; });
+
+const photoUpload = document.getElementById('photoUpload');
+const photoFile = document.getElementById('photoFile');
+const photoName = document.getElementById('photoName');
+
+photoUpload.addEventListener('dragover', e => { e.preventDefault(); photoUpload.classList.add('dragover'); });
+photoUpload.addEventListener('dragleave', () => { photoUpload.classList.remove('dragover'); });
+photoUpload.addEventListener('drop', e => {
+  e.preventDefault();
+  photoUpload.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if(file && file.type.startsWith('image/')) { photoFile.files = e.dataTransfer.files; photoName.textContent = file.name; }
+});
+photoFile.addEventListener('change', () => { if(photoFile.files[0]) photoName.textContent = photoFile.files[0].name; });
+
+// --- Updated JS for polling ---
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const youtubeLink = document.getElementById('youtubeLink').value;
+
+  try {
+    let response;
+    if (youtubeLink) {
+      response = await fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ youtubeLink })
+      });
+    } else if (videoFile.files[0] || photoFile.files[0]) {
+      const formData = new FormData();
+      if(videoFile.files[0]) formData.append("videoFile", videoFile.files[0]);
+      if(photoFile.files[0]) formData.append("photoFile", photoFile.files[0]);
+      response = await fetch("http://127.0.0.1:5000/upload", { method: "POST", body: formData });
+    } else {
+      alert("Please provide a YouTube link or select files.");
+      return;
+    }
+
+    const result = await response.json();
+    if(!result.success) { alert("Error: " + result.error); return; }
+
+    const taskId = result.task_id;
+    const gallery = document.getElementById("memeGallery");
+    gallery.innerHTML = "<p>Processing... please wait.</p>";
+
+    // Polling function
+    const poll = async () => {
+      const statusRes = await fetch(`http://127.0.0.1:5000/status/${taskId}`);
+      const status = await statusRes.json();
+      if(!status.ready){
+        setTimeout(poll, 2000); // poll again in 2s
+      } else if(status.success){
+        gallery.innerHTML = "";
+        status.memes.forEach(url => {
+          const img = document.createElement("img");
+          img.src = url;
+          gallery.appendChild(img);
+        });
+      } else {
+        gallery.innerHTML = `<p>Error: ${status.error}</p>`;
+      }
+    };
+
+    poll(); // start polling
+
+  } catch (err) {
+    console.error(err);
+    alert("Error connecting to backend!");
+  }
+});
+</script>
+
+</body>
+</html>

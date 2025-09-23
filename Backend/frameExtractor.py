@@ -55,3 +55,4 @@ for i, moment in enumerate(meme_moments):
     ])
 
     print(f"✅ Extracted frame {frame_path} and clip {clip_path}")
+
