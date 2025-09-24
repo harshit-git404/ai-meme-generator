@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 import os
 import uuid
 import torch
-from transformers import CLIPProcessor, CLIPModel, BlipProcessor, BlipForConditionalGeneration
+from transformers import CLIPProcessor, BlipProcessor, BlipForConditionalGeneration
 from PIL import Image, ImageDraw, ImageFont
 from openai import OpenAI
 import re
@@ -13,7 +13,7 @@ import re
 # --------------------------
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="YOUR_API_KEY_HERE"  # replace with your key
+    api_key="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"  # replace with your key
 )
 
 app = FastAPI()
@@ -40,18 +40,20 @@ blip_model = BlipForConditionalGeneration.from_pretrained(
 # Helpers
 # --------------------------
 def remove_emojis(text: str) -> str:
+    """Remove emojis from the text."""
     emoji_pattern = re.compile(
         "["
-        "\U0001F600-\U0001F64F"
-        "\U0001F300-\U0001F5FF"
-        "\U0001F680-\U0001F6FF"
-        "\U0001F1E0-\U0001F1FF"
+        "\U0001F600-\U0001F64F"  # emoticons
+        "\U0001F300-\U0001F5FF"  # symbols & pictographs
+        "\U0001F680-\U0001F6FF"  # transport & map symbols
+        "\U0001F1E0-\U0001F1FF"  # flags
         "]+",
         flags=re.UNICODE,
     )
     return emoji_pattern.sub(r'', text)
 
 def enhance_caption(blip_caption: str) -> str:
+    """Use LLM to generate a short funny meme-style caption."""
     try:
         response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
@@ -67,21 +69,26 @@ def enhance_caption(blip_caption: str) -> str:
         return blip_caption
 
 def generate_meme_image(image_path: str, caption: str) -> str:
-    image = Image.open(image_path).convert("RGB")
-    draw = ImageDraw.Draw(image)
+    """Create a meme with caption in a top black banner above the original image."""
+    original = Image.open(image_path).convert("RGB")
+
+    # Remove emojis
     caption = remove_emojis(caption)
 
+    # Font
     try:
         font = ImageFont.truetype("arial.ttf", size=60)
     except:
         font = ImageFont.load_default()
 
-    max_width = image.width - 40
+    # Wrap text
+    max_width = original.width - 80
     words = caption.split()
     lines, current = [], ""
+    dummy_draw = ImageDraw.Draw(original)
     for word in words:
         test_line = current + " " + word if current else word
-        bbox = draw.textbbox((0, 0), test_line, font=font)
+        bbox = dummy_draw.textbbox((0, 0), test_line, font=font)
         if bbox[2] - bbox[0] <= max_width:
             current = test_line
         else:
@@ -90,21 +97,39 @@ def generate_meme_image(image_path: str, caption: str) -> str:
     if current:
         lines.append(current)
 
-    y = 20
+    # Calculate banner height
+    line_heights = [dummy_draw.textbbox((0, 0), line, font=font)[3] for line in lines]
+    banner_height = sum(line_heights) + (10 * (len(lines) + 1))
+
+    # Create banner
+    banner = Image.new("RGB", (original.width, banner_height), "black")
+    banner_draw = ImageDraw.Draw(banner)
+
+    # Draw caption centered on banner
+    y = 10
     for line in lines:
-        bbox = draw.textbbox((0, 0), line, font=font)
+        bbox = banner_draw.textbbox((0, 0), line, font=font)
         w = bbox[2] - bbox[0]
         h = bbox[3] - bbox[1]
-        x = (image.width - w) / 2
+        x = (original.width - w) // 2
+
+        # Outline
         for dx in [-2, 2]:
             for dy in [-2, 2]:
-                draw.text((x+dx, y+dy), line, font=font, fill="black")
-        draw.text((x, y), line, font=font, fill="white")
+                banner_draw.text((x + dx, y + dy), line, font=font, fill="black")
+        banner_draw.text((x, y), line, font=font, fill="white")
         y += h + 10
 
+    # Combine banner + original image
+    combined_height = banner.height + original.height
+    final_img = Image.new("RGB", (original.width, combined_height), "black")
+    final_img.paste(banner, (0, 0))
+    final_img.paste(original, (0, banner.height))
+
+    # Save
     meme_id = str(uuid.uuid4())
     meme_path = os.path.join(GENERATED_DIR, f"{meme_id}.jpg")
-    image.save(meme_path)
+    final_img.save(meme_path)
     return meme_path
 
 # --------------------------
@@ -112,18 +137,25 @@ def generate_meme_image(image_path: str, caption: str) -> str:
 # --------------------------
 @app.post("/generate-meme")
 async def generate_meme(file: UploadFile = File(...)):
+    """Accept an image and return a generated meme."""
     image_id = str(uuid.uuid4())
     file_path = os.path.join(IMAGE_DIR, f"{image_id}.jpg")
+
+    # Save file
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
+    # BLIP caption
     image = Image.open(file_path).convert("RGB")
     blip_inputs = blip_processor(images=image, return_tensors="pt").to(device)
     with torch.no_grad():
         blip_output = blip_model.generate(**blip_inputs)
     blip_caption = blip_processor.decode(blip_output[0], skip_special_tokens=True)
 
+    # LLM-enhanced meme caption
     meme_caption = enhance_caption(blip_caption)
+
+    # Generate meme
     meme_path = generate_meme_image(file_path, meme_caption)
 
     return JSONResponse({
@@ -134,4 +166,4 @@ async def generate_meme(file: UploadFile = File(...)):
 
 @app.get("/")
 def home():
-    return {"message": "AI Personal Meme Generator API running"}
+    return {"message": "AI Personal Meme Generator API running 🚀"}
