@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import subprocess
 import os
+import sys
 import uuid
 from threading import Thread
 from Photomeme import generate_photo_memes
@@ -29,13 +30,44 @@ def process_input(task_id, input_path, input_type="video"):
 
         if input_type in ["youtube", "video"]:
             # Run video pipeline
-            command = f'python allfour.py --input "{input_path}"'
-            subprocess.run(command, shell=True, check=True)
+            script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory containing app.py
+            allfour_path = os.path.join(script_dir, "allfour.py")
+            try:
+                subprocess.run([sys.executable, allfour_path, "--input", input_path], 
+                            check=True,
+                            cwd=script_dir)  # Set working directory to Backend folder
+            except subprocess.CalledProcessError as e:
+                print(f"Error running allfour.py: {str(e)}")
+                raise
 
-            # Collect latest meme outputs
-            files = [f for f in os.listdir(OUTPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-            files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
-            meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in files[:6]]
+            # Check for final_outputs directory and find the latest run folder
+            final_outputs_dir = os.path.join(OUTPUT_DIR, "final_outputs")
+            if os.path.exists(final_outputs_dir) and os.path.isdir(final_outputs_dir):
+                # Get all run folders in final_outputs
+                run_folders = [f for f in os.listdir(final_outputs_dir) 
+                              if os.path.isdir(os.path.join(final_outputs_dir, f)) and f.startswith("run_")]
+                
+                if run_folders:
+                    # Sort by creation time (newest first)
+                    run_folders.sort(key=lambda x: os.path.getctime(os.path.join(final_outputs_dir, x)), reverse=True)
+                    latest_run_folder = run_folders[0]
+                    latest_run_path = os.path.join(final_outputs_dir, latest_run_folder)
+                    
+                    # Get image files from the latest run folder
+                    if os.path.exists(latest_run_path):
+                        files = [f for f in os.listdir(latest_run_path) 
+                               if os.path.isfile(os.path.join(latest_run_path, f)) and 
+                               f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+                        files.sort(key=lambda x: os.path.getmtime(os.path.join(latest_run_path, x)), reverse=True)
+                        meme_files = [f"http://127.0.0.1:5000/outputs/final_outputs/{latest_run_folder}/{f}" for f in files[:6]]
+            
+            # If no files found in the final_outputs, fall back to the main output directory
+            if not meme_files:
+                files = [f for f in os.listdir(OUTPUT_DIR) 
+                       if os.path.isfile(os.path.join(OUTPUT_DIR, f)) and 
+                       f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
+                meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in files[:6]]
 
         elif input_type == "photo":
             output_path = generate_photo_memes(input_path)
@@ -133,6 +165,23 @@ def serve_output(filename):
     return send_from_directory(OUTPUT_DIR, filename)
 
 
+@app.route('/outputs/final_outputs/<path:filepath>')
+def serve_final_output(filepath):
+    """
+    Serve files from the final_outputs directory and its subdirectories.
+    The filepath might contain subdirectories like 'run_20230928_123456/meme.jpg'
+    """
+    # Split the filepath into parts
+    parts = filepath.split('/')
+    if len(parts) >= 2:
+        # The first part is the run folder, the rest is the file path within it
+        run_folder = parts[0]
+        filename = '/'.join(parts[1:])
+        final_outputs_dir = os.path.join(OUTPUT_DIR, "final_outputs")
+        run_folder_path = os.path.join(final_outputs_dir, run_folder)
+        return send_from_directory(run_folder_path, filename)
+    return "File not found", 404
+
 
 @app.route('/get_memes')
 def get_memes():
@@ -142,40 +191,61 @@ def get_memes():
 
 @app.route('/get_all_memes')
 def get_all_memes():
-    # Check both output directories for memes
+    # Check all output directories for memes
     all_memes = []
+    
+    # Check final_outputs directory (for video/YouTube results)
+    final_outputs_dir = os.path.join(OUTPUT_DIR, "final_outputs")
+    if os.path.exists(final_outputs_dir) and os.path.isdir(final_outputs_dir):
+        # Get all run folders in final_outputs
+        run_folders = [f for f in os.listdir(final_outputs_dir) 
+                      if os.path.isdir(os.path.join(final_outputs_dir, f)) and f.startswith("run_")]
+        
+        if run_folders:
+            # Sort by creation time (newest first)
+            run_folders.sort(key=lambda x: os.path.getctime(os.path.join(final_outputs_dir, x)), reverse=True)
+            latest_run_folder = run_folders[0]
+            latest_run_path = os.path.join(final_outputs_dir, latest_run_folder)
+            
+            # Get image files from the latest run folder
+            if os.path.exists(latest_run_path):
+                files = [f for f in os.listdir(latest_run_path) 
+                       if os.path.isfile(os.path.join(latest_run_path, f)) and 
+                       f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+                
+                for f in files:
+                    file_path = os.path.join(latest_run_path, f)
+                    mtime = os.path.getmtime(file_path)
+                    url = f"http://127.0.0.1:5000/outputs/final_outputs/{latest_run_folder}/{f}"
+                    all_memes.append((url, mtime))
     
     # Check main output directory
     if os.path.exists(OUTPUT_DIR):
         main_files = [f for f in os.listdir(OUTPUT_DIR) 
                      if os.path.isfile(os.path.join(OUTPUT_DIR, f)) 
                      and f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4', '.webm'))]
-        main_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
-        all_memes.extend([f"http://127.0.0.1:5000/outputs/{f}" for f in main_files])
+        
+        for f in main_files:
+            file_path = os.path.join(OUTPUT_DIR, f)
+            mtime = os.path.getmtime(file_path)
+            url = f"http://127.0.0.1:5000/outputs/{f}"
+            all_memes.append((url, mtime))
     
     # Check photo memes directory
     if os.path.exists(PHOTO_OUTPUT_DIR):
         photo_files = [f for f in os.listdir(PHOTO_OUTPUT_DIR) 
                       if os.path.isfile(os.path.join(PHOTO_OUTPUT_DIR, f)) 
                       and f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-        photo_files.sort(key=lambda x: os.path.getmtime(os.path.join(PHOTO_OUTPUT_DIR, x)), reverse=True)
-        all_memes.extend([f"http://127.0.0.1:5000/outputs/photo_memes/{f}" for f in photo_files])
-    
-    # Sort all memes by modification time (newest first)
-    all_memes_with_time = []
-    for url in all_memes:
-        if '/outputs/photo_memes/' in url:
-            file_path = os.path.join(PHOTO_OUTPUT_DIR, url.split('/')[-1])
-        else:
-            file_path = os.path.join(OUTPUT_DIR, url.split('/')[-1])
         
-        if os.path.exists(file_path):
+        for f in photo_files:
+            file_path = os.path.join(PHOTO_OUTPUT_DIR, f)
             mtime = os.path.getmtime(file_path)
-            all_memes_with_time.append((url, mtime))
+            url = f"http://127.0.0.1:5000/outputs/photo_memes/{f}"
+            all_memes.append((url, mtime))
     
     # Sort by modification time (newest first) and take top 6
-    all_memes_with_time.sort(key=lambda x: x[1], reverse=True)
-    top_memes = [url for url, _ in all_memes_with_time[:6]]
+    all_memes.sort(key=lambda x: x[1], reverse=True)
+    top_memes = [url for url, _ in all_memes[:6]]
     
     return jsonify({'memes': top_memes})
 
