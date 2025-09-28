@@ -256,7 +256,7 @@ button.upload-btn:not(:disabled) {
   justify-content: center;
 }
 .modal-content {
-  background: #fff;
+  background: #1a1a2e;
   border-radius: 16px;
   padding: 32px 24px;
   max-width: 90vw;
@@ -265,14 +265,40 @@ button.upload-btn:not(:disabled) {
   margin: 60px auto;
   text-align: center;
   position: relative;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
 }
 .modal .close {
   position: absolute;
   right: 18px;
   top: 12px;
   font-size: 2rem;
-  color: #333;
+  color: #fff;
   cursor: pointer;
+}
+
+/* Output Modal */
+#outputModal .modal-content {
+  max-width: 1200px;
+  width: 90%;
+}
+#outputModal h3 {
+  margin-bottom: 24px;
+  color: #00c3ff;
+  font-size: 1.8rem;
+}
+.output-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 12px 0;
+}
+.output-images img, 
+.output-images video {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 /* Remove min-height for YouTube upload box only */
@@ -349,6 +375,61 @@ body, .container, .upload-box, .input-section, .dropzone-input, .refresh-btn, .u
   background: #0078ff;
   color: #fff;
   cursor: pointer;
+}
+
+/* Results Page Styling */
+.results-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  margin: 40px 0;
+}
+
+.back-button-container {
+  display: flex;
+  justify-content: center;
+  margin: 40px 0;
+}
+
+.back-button {
+  background: linear-gradient(135deg, #0078ff, #00c3ff);
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 16px rgba(0,120,255,0.2);
+  display: inline-block;
+}
+
+.back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 20px rgba(0,120,255,0.3);
+}
+
+.no-results {
+  text-align: center;
+  padding: 50px 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  margin: 40px 0;
+}
+
+.no-results h3 {
+  color: #00c3ff;
+  margin-bottom: 16px;
+}
+
+.no-results p {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .generate-btn-row {

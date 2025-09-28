@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Meme Results</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .results-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px;
+  }
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+  }
+  .meme-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+  }
+  .meme-card:hover {
+    transform: translateY(-5px);
+  }
+  .meme-card img, .meme-card video {
+    width: 100%;
+    display: block;
+  }
+  .meme-actions {
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+  }
+  .download-btn, .share-btn, .copy-btn {
+    background: linear-gradient(135deg, #0078ff, #00c3ff);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 0 4px;
+  }
+  .download-btn:hover, .share-btn:hover, .copy-btn:hover {
+    background: linear-gradient(135deg, #0064d6, #00b0eb);
+    transform: scale(1.05);
+  }
+  .share-btn {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  }
+  .share-btn:hover {
+    background: linear-gradient(135deg, #6d32d1, #4338ca);
+  }
+  .copy-btn {
+    background: linear-gradient(135deg, #059669, #10b981);
+  }
+  .copy-btn:hover {
+    background: linear-gradient(135deg, #047857, #0ea271);
+  }
+  .copy-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 9999;
+  }
+  .copy-notification.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .back-link {
+    color: #4da3ff;
+    text-decoration: none;
+    font-size: 1.1em;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 30px;
+  }
+  .back-link:hover {
+    text-decoration: underline;
+  }
+  .back-link::before {
+    content: "←";
+    margin-right: 8px;
+  }
+  .no-results {
+    text-align: center;
+    padding: 50px 0;
+    color: #999;
+  }
+  .result-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 20px;
+  }
+  .refresh-results {
+    background: linear-gradient(135deg, #0078ff, #00c3ff);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+  }
+  .refresh-results:hover {
+    background: linear-gradient(135deg, #0064d6, #00b0eb);
+    transform: translateY(-2px);
+  }
+</style>
+</head>
+<body>
+
+<!-- Ambient background -->
+<div class="ambient-layer">
+  <div class="ambient-orb orb1"></div>
+  <div class="ambient-orb orb2"></div>
+  <div class="ambient-orb orb3"></div>
+</div>
+
+<!-- Results content -->
+<div class="results-container">
+  <h2>Your Generated Memes</h2>
+  <div id="loading">
+    <div class="samsung-know-loader">
+      <div class="dot dot-tl"></div>
+      <div class="dot dot-tr"></div>
+      <div class="dot dot-bl"></div>
+      <div class="dot dot-br"></div>
+    </div>
+    <div class="loading-text">Loading your memes...</div>
+  </div>
+  <div id="resultsGrid" class="results-grid"></div>
+  <div class="result-actions">
+    <button id="refreshBtn" class="refresh-results">Refresh Results</button>
+    <a href="index.html" class="back-link">Back to generator</a>
+  </div>
+</div>
+
+<script src="results.js"></script>
+</body>
+</html>

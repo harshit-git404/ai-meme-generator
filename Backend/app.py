@@ -111,6 +111,21 @@ def status(task_id):
         return jsonify({"ready": True, "success": False, "error": result["error"]})
     else:
         return jsonify({"ready": True, "success": True, "memes": result})
+        
+@app.route('/results/<task_id>')
+def get_results(task_id):
+    """Get results for a specific task"""
+    if task_id not in tasks:
+        return jsonify({"success": False, "error": "Invalid task ID"})
+
+    result = tasks[task_id]
+
+    if result is None:
+        return jsonify({"success": False, "ready": False})
+    elif isinstance(result, dict) and "error" in result:
+        return jsonify({"success": False, "ready": True, "error": result["error"]})
+    else:
+        return jsonify({"success": True, "ready": True, "memes": result})
 
 
 @app.route('/outputs/<path:filename>')
@@ -121,9 +136,53 @@ def serve_output(filename):
 
 @app.route('/get_memes')
 def get_memes():
-    meme_files = sorted(os.listdir(OUTPUT_DIR))[:6]
-    meme_urls = [f'/outputs/{fname}' for fname in meme_files]
-    return jsonify({'memes': meme_urls})
+    # Reuse the get_all_memes logic for consistency
+    return get_all_memes()
+
+
+@app.route('/get_all_memes')
+def get_all_memes():
+    # Check both output directories for memes
+    all_memes = []
+    
+    # Check main output directory
+    if os.path.exists(OUTPUT_DIR):
+        main_files = [f for f in os.listdir(OUTPUT_DIR) 
+                     if os.path.isfile(os.path.join(OUTPUT_DIR, f)) 
+                     and f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4', '.webm'))]
+        main_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
+        all_memes.extend([f"http://127.0.0.1:5000/outputs/{f}" for f in main_files])
+    
+    # Check photo memes directory
+    if os.path.exists(PHOTO_OUTPUT_DIR):
+        photo_files = [f for f in os.listdir(PHOTO_OUTPUT_DIR) 
+                      if os.path.isfile(os.path.join(PHOTO_OUTPUT_DIR, f)) 
+                      and f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+        photo_files.sort(key=lambda x: os.path.getmtime(os.path.join(PHOTO_OUTPUT_DIR, x)), reverse=True)
+        all_memes.extend([f"http://127.0.0.1:5000/outputs/photo_memes/{f}" for f in photo_files])
+    
+    # Sort all memes by modification time (newest first)
+    all_memes_with_time = []
+    for url in all_memes:
+        if '/outputs/photo_memes/' in url:
+            file_path = os.path.join(PHOTO_OUTPUT_DIR, url.split('/')[-1])
+        else:
+            file_path = os.path.join(OUTPUT_DIR, url.split('/')[-1])
+        
+        if os.path.exists(file_path):
+            mtime = os.path.getmtime(file_path)
+            all_memes_with_time.append((url, mtime))
+    
+    # Sort by modification time (newest first) and take top 6
+    all_memes_with_time.sort(key=lambda x: x[1], reverse=True)
+    top_memes = [url for url, _ in all_memes_with_time[:6]]
+    
+    return jsonify({'memes': top_memes})
+
+
+@app.route('/outputs/photo_memes/<path:filename>')
+def serve_photo_output(filename):
+    return send_from_directory(PHOTO_OUTPUT_DIR, filename)
 
 
 
@@ -131,6 +190,19 @@ def get_memes():
 ## Custom caption functionality disabled intentionally.
 ## Endpoint removed to simplify backend while feature is paused.
 
+
+# Serve frontend files
+@app.route('/')
+def serve_index():
+    return send_from_directory('../Frontend', 'index.html')
+
+@app.route('/results.html')
+def serve_results():
+    return send_from_directory('../Frontend', 'results.html')
+
+@app.route('/<path:path>')
+def serve_frontend(path):
+    return send_from_directory('../Frontend', path)
 
 if __name__ == "__main__":
     # Run without auto-reloader to avoid duplicate model loads

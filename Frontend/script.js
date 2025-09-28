@@ -294,28 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function pollTaskStatus(task_id, uploadType) {
-        fetch(`http://127.0.0.1:5000/status/${task_id}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.ready) {
-                    setTimeout(() => pollTaskStatus(task_id, uploadType), 1500);
-                } else {
-                    showLoading(false);
-                    if (data.success) {
-                        // Option A: show modal (current)
-                        // showOutputModal(data.memes);
-                        // Option B: redirect after completed (uncomment if desired)
-                        // window.location.href = `/results.html?task=${task_id}&type=${uploadType}`;
-                        showOutputModal(data.memes);
-                    } else {
-                        showStatus("Error: " + (data.error || "Unknown error"));
-                    }
-                }
-            })
-            .catch(() => {
-                showLoading(false);
-                showStatus("Error connecting to server.");
-            });
+        // Redirect immediately to results page which will handle polling and displaying memes
+        window.location.href = `results.html?task_id=${task_id}&type=${uploadType}`;
     }
 
     function uploadYoutube() {

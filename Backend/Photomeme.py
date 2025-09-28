@@ -18,7 +18,7 @@ os.makedirs(PHOTO_OUTPUT_DIR, exist_ok=True)
 # --------------------------
 # API Config for OpenRouter
 # --------------------------
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 HEADERS = {
     "Content-Type": "application/json",
