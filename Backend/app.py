@@ -1,120 +1,68 @@
-# from flask import Flask, request, jsonify, send_from_directory
-# from flask_cors import CORS
-# import subprocess
-# import os
-# import uuid
-
-# app = Flask(__name__)
-# CORS(app)  # Allow requests from frontend
-
-# OUTPUT_DIR = os.path.join(os.getcwd(), "outputs")
-# os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-# @app.route('/upload', methods=['POST'])
-# def upload():
-#     try:
-#         youtube_link = None
-#         video_file = None
-#         photo_file = None
-
-#         # Check if JSON (YouTube link)
-#         if request.is_json:
-#             data = request.get_json()
-#             youtube_link = data.get('youtubeLink')
-
-#         # Else, handle uploaded files
-#         else:
-#             video_file = request.files.get('videoFile')
-#             photo_file = request.files.get('photoFile')
-
-#             # Save uploaded files to downloads folder
-#             if video_file:
-#                 video_path = os.path.join("downloads", f"{uuid.uuid4()}_{video_file.filename}")
-#                 video_file.save(video_path)
-#                 youtube_link = video_path  # pass path instead of link
-#             if photo_file:
-#                 photo_path = os.path.join("downloads", f"{uuid.uuid4()}_{photo_file.filename}")
-#                 photo_file.save(photo_path)
-#                 youtube_link = photo_path  # pass path instead of link
-
-#         # Call allfour.py with the input
-#         command = f'python allfour.py --input "{youtube_link}"'
-#         subprocess.run(command, shell=True, check=True)
-
-#         # After allfour.py finishes, get top 6 meme outputs
-#         meme_files = os.listdir(OUTPUT_DIR)
-#         meme_files = [f for f in meme_files if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-#         meme_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
-
-#         memes = [f"http://127.0.0.1:5000/outputs/{f}" for f in meme_files[:6]]
-
-#         return jsonify({"success": True, "memes": memes})
-
-#     except Exception as e:
-#         return jsonify({"success": False, "error": str(e)})
-
-# # Serve output files
-# @app.route('/outputs/<filename>')
-# def serve_output(filename):
-#     return send_from_directory(OUTPUT_DIR, filename)
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
-
-
-
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import subprocess
 import os
 import uuid
 from threading import Thread
+from Photomeme import generate_photo_memes
 
 app = Flask(__name__)
 CORS(app)
 
 OUTPUT_DIR = os.path.join(os.getcwd(), "outputs")
+PHOTO_OUTPUT_DIR = os.path.join(OUTPUT_DIR, "photo_memes")
 DOWNLOADS_DIR = os.path.join(os.getcwd(), "downloads")
+
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+os.makedirs(PHOTO_OUTPUT_DIR, exist_ok=True)
 os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
-# Keep track of tasks
-tasks = {}
+# Store task states
+tasks = {}  # { task_id: None | [urls] | {"error": "..."} }
 
-def process_input(task_id, input_path, is_youtube=False):
+def process_input(task_id, input_path, input_type="video"):
+    """
+    Background processing for youtube/video/photo
+    """
     try:
-        # Build command
-        if is_youtube:
+        meme_files = []
+
+        if input_type in ["youtube", "video"]:
+            # Run video pipeline
             command = f'python allfour.py --input "{input_path}"'
-        else:
-            command = f'python allfour.py --input "{input_path}"'
+            subprocess.run(command, shell=True, check=True)
 
-        # Run long process
-        subprocess.run(command, shell=True, check=True)
+            # Collect latest meme outputs
+            files = [f for f in os.listdir(OUTPUT_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+            files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
+            meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in files[:6]]
 
-        # Get top 6 meme files
-        meme_files = os.listdir(OUTPUT_DIR)
-        meme_files = [f for f in meme_files if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-        meme_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
+        elif input_type == "photo":
+            output_files = generate_photo_memes(input_path)
+            meme_files = [f"http://127.0.0.1:5000/outputs/photo_memes/{f}" for f in output_files]
 
-        tasks[task_id] = [f"http://127.0.0.1:5000/outputs/{f}" for f in meme_files[:6]]
+        tasks[task_id] = meme_files
 
     except Exception as e:
         tasks[task_id] = {"error": str(e)}
+
 
 @app.route('/upload', methods=['POST'])
 def upload():
     try:
         input_path = None
-        is_youtube = False
+        input_type = None
 
+        # Handle YouTube JSON input
         if request.is_json:
             data = request.get_json()
             youtube_link = data.get('youtubeLink')
             if not youtube_link:
                 return jsonify({"success": False, "error": "No YouTube link provided."})
             input_path = youtube_link
-            is_youtube = True
+            input_type = "youtube"
+
+        # Handle file uploads
         else:
             video_file = request.files.get('videoFile')
             photo_file = request.files.get('photoFile')
@@ -122,25 +70,29 @@ def upload():
             if video_file:
                 input_path = os.path.join(DOWNLOADS_DIR, f"{uuid.uuid4()}_{video_file.filename}")
                 video_file.save(input_path)
+                input_type = "video"
+
             elif photo_file:
                 input_path = os.path.join(DOWNLOADS_DIR, f"{uuid.uuid4()}_{photo_file.filename}")
                 photo_file.save(input_path)
+                input_type = "photo"
+
             else:
                 return jsonify({"success": False, "error": "No input provided."})
 
-        # Generate task ID
+        # Create task ID
         task_id = str(uuid.uuid4())
-        tasks[task_id] = None
+        tasks[task_id] = None  # mark pending
 
-        # Start background processing
-        thread = Thread(target=process_input, args=(task_id, input_path, is_youtube))
+        # Process in background
+        thread = Thread(target=process_input, args=(task_id, input_path, input_type))
         thread.start()
 
-        # Return task ID immediately
         return jsonify({"success": True, "task_id": task_id})
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
 
 @app.route('/status/<task_id>')
 def status(task_id):
@@ -156,9 +108,29 @@ def status(task_id):
     else:
         return jsonify({"ready": True, "success": True, "memes": result})
 
-@app.route('/outputs/<filename>')
+
+@app.route('/outputs/<path:filename>')
 def serve_output(filename):
     return send_from_directory(OUTPUT_DIR, filename)
+
+
+@app.route('/get_memes')
+def get_memes():
+    meme_files = sorted(os.listdir(OUTPUT_DIR))[:6]
+    meme_urls = [f'/outputs/{fname}' for fname in meme_files]
+    return jsonify({'memes': meme_urls})
+
+
+@app.route('/custom_caption', methods=['POST'])
+def custom_caption():
+    data = request.json
+    meme_file = data.get('meme_file')
+    caption = data.get('caption')
+    custom = data.get('custom')  # 'y' or 'n'
+    # Process the custom caption as needed
+    # ...
+    return jsonify({'success': True})
+
 
 if __name__ == "__main__":
     app.run(debug=True)

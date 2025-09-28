@@ -1,0 +1,404 @@
+/* ===== Reset & Base ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Background & Ambient Orbs */
+body {
+  position: relative;
+  background: linear-gradient(135deg, #000000 0%, #0a0a1a 25%, #1a1a2e 50%, #0f0f23 75%, #000000 100%);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(0,123,255,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(0,255,195,0.06) 0%, transparent 50%),
+    radial-gradient(circle at 40% 80%, rgba(128,0,255,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -2;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -1;
+  animation: gridFloat 25s ease-in-out infinite;
+}
+
+@keyframes gridFloat {
+  0%, 100% { transform: translate(0, 0); opacity: 0.3; }
+  50% { transform: translate(8px, 4px); opacity: 0.1; }
+}
+
+.ambient-layer { position: fixed; inset: 0; z-index: -3; pointer-events: none; overflow: hidden; }
+.ambient-orb { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.06; animation: ambientFloat 20s ease-in-out infinite; }
+
+.orb1 { width: 300px; height: 300px; background: linear-gradient(135deg, #0078ff, #00c3ff); top: -150px; left: -150px; animation-delay: 0s; }
+.orb2 { width: 200px; height: 200px; background: linear-gradient(135deg, #00c3ff, #0078ff); bottom: -100px; right: -100px; animation-delay: -10s; }
+.orb3 { width: 150px; height: 150px; background: linear-gradient(135deg, #4f46e5, #7c3aed); top: 50%; right: -75px; animation-delay: -5s; }
+
+@keyframes ambientFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.1); }
+  66% { transform: translate(-20px, 30px) scale(0.9); }
+}
+
+/* Headers & Containers */
+h2 {
+  margin: 60px 0 40px;
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #ffffff 0%, #00c3ff 50%, #0078ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+  z-index: 2;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 20px 60px;
+  position: relative;
+  z-index: 2;
+  align-items: start;
+  justify-items: center;
+}
+
+.upload-box {
+  background: rgba(255,255,255,0.07);
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  padding: 28px 22px 22px 22px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+  transition: box-shadow 0.2s, background 0.2s;
+  position: relative;
+  max-width: 380px;
+  width: 100%;
+}
+
+/* Place boxes: photo left, youtube center, video right */
+#photoBox { grid-column: 1; }
+#youtubeBox { grid-column: 2; }
+#videoBox { grid-column: 3; }
+
+/* Responsive: stack on small screens */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    justify-items: center;
+  }
+  #photoBox, #youtubeBox, #videoBox {
+    grid-column: 1 !important;
+    max-width: 420px;
+  }
+}
+
+/* Box header */
+.box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.box-title { font-size: 1.4rem; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 12px; }
+.box-icon { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #0078ff, #00c3ff); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.refresh-btn { width: 36px; height: 36px; border: none; border-radius: 50%; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.3s ease; }
+.refresh-btn:hover { background: rgba(0,195,255,0.1); color: #00c3ff; transform: rotate(180deg); }
+.refresh-btn {
+  caret-color: transparent;
+  user-select: none;
+}
+
+/* Inputs */
+.input-section { margin-bottom: 20px; }
+.visible-input, #youtubeLink { width: 100%; padding: 16px 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 1rem; transition: all 0.3s ease; }
+.visible-input:focus, #youtubeLink:focus { border-color: #00c3ff; background: rgba(0,195,255,0.05); box-shadow: 0 0 0 3px rgba(0,195,255,0.1); }
+.visible-input::placeholder, #youtubeLink::placeholder { color: rgba(255,255,255,0.4); }
+.file-name { margin-top: 12px; font-size: 0.9rem; color: #00c3ff; text-align: center; }
+input[type="file"] { display: none; }
+
+/* Caption options */
+.caption-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.option-btn { padding: 12px 16px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.7); cursor: pointer; font-size: 0.9rem; text-align: center; transition: all 0.3s ease; }
+.option-btn:hover { border-color: rgba(0,195,255,0.3); background: rgba(0,195,255,0.05); color: #00c3ff; }
+.option-btn.selected { border-color: #00c3ff; background: rgba(0,195,255,0.1); color: #00c3ff; }
+
+/* Upload button */
+.upload-btn { width: auto; /* Ensure button only as wide as its content */ 
+  min-width: 160px; /* Optional: set a minimum width for aesthetics */ 
+  max-width: 100%; 
+  padding: 14px 36px; 
+  font-size: 1.1rem; 
+  border-radius: 12px; 
+  background: linear-gradient(135deg, #0078ff, #00c3ff); color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 24px; box-shadow: 0 8px 24px rgba(0,120,255,0.2); }
+.upload-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,120,255,0.3); }
+.upload-btn:disabled { background: linear-gradient(135deg, #0078ff, #00c3ff); opacity: 0.85; cursor: not-allowed; filter: grayscale(0.1) brightness(0.98); box-shadow: none; transform: none; }
+
+/* Subtle shine animation */
+@keyframes shine {
+  0% { background-position: -120px 0; }
+  100% { background-position: 120px 0; }
+}
+
+button.upload-btn:not(:disabled) {
+  background: linear-gradient(135deg, #0078ff, #00c3ff 60%, #00c3ff 80%, #0078ff 100%);
+  background-size: 200% 100%;
+  animation: shine 3.5s linear infinite;
+  box-shadow: 0 12px 32px rgba(0,120,255,0.18);
+  opacity: 1;
+  filter: none;
+}
+
+/* Timestamp rows */
+.timestamp-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+.timestamp-row input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #fff; outline: none; font-size: 0.9rem; }
+.add-timestamp { background: linear-gradient(135deg, #0078ff, #00c3ff); border: none; padding: 10px 16px; border-radius: 8px; color: white; cursor: pointer; font-size: 0.9rem; }
+
+/* Preview */
+.timestamps-preview { max-height: 120px; overflow-y: auto; margin-top: 12px; }
+.timestamp-preview-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; margin-bottom: 6px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 0.85rem; }
+.remove-preview-timestamp { color: #ff6b6b; cursor: pointer; font-weight: bold; padding: 2px 6px; }
+
+/* Caption modal */
+.caption-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
+.caption-modal-content { background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(20,20,40,0.95)); margin: 10% auto; padding: 32px; border-radius: 24px; width: 90%; max-width: 500px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; }
+.caption-modal h3 { color: #00c3ff; margin-bottom: 24px; font-size: 1.4rem; text-align: center; }
+.caption-modal-buttons { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+.caption-modal-btn { padding: 12px 24px; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+.cancel-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+.cancel-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.save-btn { background: linear-gradient(135deg, #0078ff, #00c3ff); color: white; }
+.save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,120,255,0.3); }
+
+.dropzone-input {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.03); /* Match YouTube input background */
+  border: 1px solid rgba(255,255,255,0.1); /* Match YouTube input border */
+  border-radius: 16px; /* Match YouTube input rounded corners */
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+  transition: border-color 0.3s, background 0.3s;
+  min-height: 56px; /* Match YouTube input height */
+  font-size: 1rem;
+  position: relative;
+  outline: none;
+  padding: 16px 20px; /* Match YouTube input padding */
+  margin-bottom: 0; /* Remove extra margin */
+  box-sizing: border-box;
+  user-select: none;
+  caret-color: transparent;
+}
+
+.dropzone-input:focus, .dropzone-input.dragover {
+  border-color: #00c3ff;
+  background: rgba(0,195,255,0.05);
+}
+
+.plus-icon {
+  font-size: 2rem;
+  color: #00c3ff;
+  margin-bottom: 4px;
+  font-weight: bold;
+  line-height: 1;
+  user-select: none;
+}
+
+.dropzone-text {
+  color: rgba(255,255,255,0.7);
+  opacity: 1;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(10,20,40,0.82);
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+  margin: 60px auto;
+  text-align: center;
+  position: relative;
+}
+.modal .close {
+  position: absolute;
+  right: 18px;
+  top: 12px;
+  font-size: 2rem;
+  color: #333;
+  cursor: pointer;
+}
+
+/* Remove min-height for YouTube upload box only */
+.upload-box.youtube-upload {
+  min-height: unset;
+  /* Do NOT set width here, so it inherits from .upload-box */
+}
+
+/* Remove caret everywhere by default */
+body, .container, .upload-box, .input-section, .dropzone-input, .refresh-btn, .upload-btn, .box-title, h2 {
+  caret-color: transparent;
+}
+
+/* Allow caret only inside the YouTube textbox */
+#youtubeLink {
+  caret-color: auto;
+}
+
+.loading-overlay {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  background: rgba(10, 20, 40, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.samsung-loader {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 18px;
+}
+.loading-text {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.memes-page {
+  padding: 32px;
+  background: #f7faff;
+  min-height: 100vh;
+}
+.memes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+.meme-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 18px;
+  text-align: center;
+  width: 260px;
+}
+.meme-card img, .meme-card video {
+  max-width: 100%;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.meme-card button {
+  margin: 6px 4px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: #0078ff;
+  color: #fff;
+  cursor: pointer;
+}
+
+.generate-btn-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 32px;
+  grid-column: 1 / -1; /* If using grid */
+}
+/*   Loader   */
+.samsung-know-loader {
+  width: 64px;
+  height: 64px;
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.samsung-know-loader .dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #0078ff;
+  transition: background 0.2s;
+}
+
+/* Dot positions */
+.samsung-know-loader .dot-tl { top: 0; left: 0; }
+.samsung-know-loader .dot-tr { top: 0; right: 0; }
+.samsung-know-loader .dot-bl { bottom: 0; left: 0; }
+.samsung-know-loader .dot-br { bottom: 0; right: 0; }
+
+/* Animation keyframes */
+@keyframes cyan-dot-move {
+  0%   { transform: translate(0, 0); }
+  12.5% { transform: translate(0, 0); }
+  25%  { transform: translate(0, -46px); }
+  37.5% { transform: translate(0, -46px); }
+  50%  { transform: translate(46px, -46px); }
+  62.5% { transform: translate(46px, -46px); }
+  75%  { transform: translate(46px, 0); }
+  87.5% { transform: translate(46px, 0); }
+  100% { transform: translate(0, 0); }
+}
+
+/* The cyan dot starts at bottom-left and moves clockwise */
+.samsung-know-loader .dot-bl {
+  background: #00c3ff;
+  z-index: 2;
+  animation: cyan-dot-move 1.2s cubic-bezier(.6,0,.4,1) infinite;
+}
+
+/* The other dots are always blue, but their position is "replaced" by the cyan dot as it animates */

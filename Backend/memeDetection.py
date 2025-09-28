@@ -1,14 +1,16 @@
 import os
 import json
 import glob
-import subprocess
+import openai
 import re
 
 OUTPUT_DIR = "outputs"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "meme_moments.json")
 
 # --- Step 1: Find latest *_combined_summary.json ---
-summary_files = glob.glob(os.path.join(OUTPUT_DIR, ".*_combined_summary.json"))
+summary_files = glob.glob(os.path.join(OUTPUT_DIR, "*_combined_summary.json"))
+summary_files += glob.glob(os.path.join(OUTPUT_DIR, ".*_combined_summary.json"))
+
 if not summary_files:
     raise FileNotFoundError("❌ No combined summary JSON found in outputs/")
 
@@ -19,8 +21,21 @@ print(f"[INFO] Using combined JSON: {latest_summary}")
 with open(latest_summary, "r", encoding="utf-8") as f:
     combined = json.load(f)
 
-# Extract only verbal transcript part
-verbal_data = combined.get("verbal", {}).get("data", [])
+# --- Extract verbal transcript safely ---
+verbal_data = []
+
+if isinstance(combined, dict):
+    if "verbal" in combined and "data" in combined["verbal"]:
+        verbal_data = combined["verbal"]["data"]
+    elif combined.get("type") == "verbal" and "data" in combined:
+        verbal_data = combined["data"]
+
+elif isinstance(combined, list):
+    for block in combined:
+        if block.get("type") == "verbal" and "data" in block:
+            verbal_data = block["data"]
+            break
+
 if not verbal_data:
     raise ValueError("❌ No 'verbal' transcript found in JSON")
 
@@ -29,7 +44,7 @@ transcript_text = ""
 for entry in verbal_data:
     transcript_text += f"[{entry['start_time']} - {entry['end_time']}] {entry['text']}\n"
 
-# --- Step 4: Prompt for Ollama ---
+# --- Step 4: Prompt for OpenRouter GPT ---
 prompt = f"""
 ONLY return JSON array, no explanations or markdown.
 Find meme-able moments (funny, awkward, ironic, angry, frustrated).
@@ -48,22 +63,27 @@ Transcript:
 {transcript_text}
 """
 
-# --- Step 5: Run Ollama mistral ---
-result = subprocess.run(
-    ["ollama", "run", "mistral"],
-    input=prompt.encode("utf-8"),
-    capture_output=True,
+# --- Step 5: Run OpenAI (OpenRouter) model ---
+client = openai.OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key="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"
 )
 
-raw_output = result.stdout.decode("utf-8").strip()
+response = client.chat.completions.create(
+    model="openai/gpt-3.5-turbo",
+    messages=[{"role": "user", "content": prompt}],
+    max_tokens=1024,
+    temperature=0.7
+)
 
-# --- Step 6: Extract JSON from model output ---
-match = re.search(r"\[.*\]", raw_output, re.DOTALL)
+raw_output = response.choices[0].message.content.strip()
+
+# --- Step 6: Extract JSON safely ---
+match = re.search(r"\[\s*{.*}\s*\]", raw_output, re.DOTALL)
 if match:
     json_str = match.group(0)
     try:
         meme_moments = json.loads(json_str)
-        # Round timestamps to 2 decimals
         for m in meme_moments:
             m["start"] = round(float(m["start"]), 2)
             m["end"] = round(float(m["end"]), 2)

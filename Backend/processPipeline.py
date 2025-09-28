@@ -1,10 +1,9 @@
-# processPipeline.py
 import os
 import re
 import json
 import logging
 import shutil
-from visualProcess import process_visual
+# from visualProcess import process_visual   # ❌ disable visual import
 from verbalProcess import process_verbal
 
 # -----------------------------
@@ -32,7 +31,7 @@ def get_base_name(input_source):
 # -----------------------------
 # Main pipeline
 # -----------------------------
-def process_pipeline(input_source, max_visual_scenes=None, fp16=False):
+def process_pipeline(input_source, fp16=False):
     logging.info(f"Processing input: {input_source}")
 
     # -----------------------------
@@ -49,13 +48,12 @@ def process_pipeline(input_source, max_visual_scenes=None, fp16=False):
         input_source = video_path  # downstream uses this path
 
     # -----------------------------
-    # Process
+    # Only run verbal
     # -----------------------------
-    visual_data = process_visual(input_source, max_scenes=max_visual_scenes)
     verbal_data = process_verbal(input_source, fp16=fp16)
 
     # -----------------------------
-    # Save combined JSON
+    # Save combined JSON (verbal only)
     # -----------------------------
     base_name = get_base_name(input_source)
     combined_json_file = os.path.join(OUTPUT_FOLDER, f"{base_name}_combined_summary.json")
@@ -66,14 +64,14 @@ def process_pipeline(input_source, max_visual_scenes=None, fp16=False):
         )
         counter += 1
 
-    combined_result = {"visual": visual_data, "verbal": verbal_data}
+    combined_result = verbal_data  # ✅ just copy verbal summary
 
     with open(combined_json_file, "w", encoding="utf-8") as f:
         json.dump(combined_result, f, indent=4, ensure_ascii=False)
 
     logging.info(
-        f"✅ Combined summary saved to {combined_json_file} | "
-        f"Visual scenes: {len(visual_data['data'])}, Verbal segments: {len(verbal_data['data'])}"
+        f"✅ Combined (verbal-only) summary saved to {combined_json_file} | "
+        f"Verbal segments: {len(verbal_data['data'])}"
     )
     return combined_result
 
@@ -82,10 +80,9 @@ def process_pipeline(input_source, max_visual_scenes=None, fp16=False):
 # -----------------------------
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Run visual + verbal processing pipeline")
+    parser = argparse.ArgumentParser(description="Run verbal-only processing pipeline")
     parser.add_argument("--input", type=str, required=True, help="Local file path or YouTube URL")
-    parser.add_argument("--max_scenes", type=int, default=None, help="Optional: max visual scenes to process")
     parser.add_argument("--fp16", action="store_true", help="Use fp16 for Whisper transcription")
     args = parser.parse_args()
 
-    process_pipeline(args.input, max_visual_scenes=args.max_scenes, fp16=args.fp16)
+    process_pipeline(args.input, fp16=args.fp16)

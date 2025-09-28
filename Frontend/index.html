@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AI Meme Uploader — Samsung Professional</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Ambient background -->
+<div class="ambient-layer">
+  <div class="ambient-orb orb1"></div>
+  <div class="ambient-orb orb2"></div>
+  <div class="ambient-orb orb3"></div>
+</div>
+
+<!-- Page content -->
+<h2>AI Meme Generator</h2>
+<div class="container">
+
+  <!-- Photo Upload Box -->
+  <div class="upload-box" id="photoBox">
+    <div class="box-header">
+      <div class="box-title">
+        <div class="box-icon">📸</div>
+        Photo Upload
+      </div>
+      <button class="refresh-btn" onclick="event.stopPropagation(); refreshPhoto();" title="Clear selection">↻</button>
+    </div>
+    <div class="input-section">
+      <div class="dropzone-input" id="photoDisplay">
+        <span class="plus-icon">+</span>
+        <span class="dropzone-text">Drag & drop or click to select a photo</span>
+      </div>
+      <input type="file" id="photoFile" accept="image/*">
+      <!-- REMOVE: <div class="file-name" id="photoName"></div> -->
+    </div>
+    <!-- REMOVE this: <button class="upload-btn" onclick="uploadPhoto()">Generate Meme</button> -->
+  </div>
+
+  <!-- YouTube Upload Box -->
+  <div class="upload-box youtube-upload" id="youtubeBox">
+    <div class="box-header">
+      <div class="box-title">
+        <div class="box-icon">📺</div>
+        YouTube Upload
+      </div>
+      <button class="refresh-btn" onclick="event.stopPropagation(); refreshYoutube();" title="Clear selection">↻</button>
+    </div>
+    <div class="input-section">
+      <input type="text" id="youtubeLink" placeholder="Paste YouTube link here">
+    </div>
+    <!-- REMOVE this: <button class="upload-btn" id="youtubeGenerateBtn" onclick="uploadYoutube()">Generate Meme</button> -->
+  </div>
+
+  <!-- Video Upload Box -->
+  <div class="upload-box" id="videoBox">
+    <div class="box-header">
+      <div class="box-title">
+        <div class="box-icon">🎬</div>
+        Video Upload
+      </div>
+      <button class="refresh-btn" onclick="event.stopPropagation(); refreshVideo();" title="Clear selection">↻</button>
+    </div>
+    <div class="input-section">
+      <div class="dropzone-input" id="videoDisplay">
+        <span class="plus-icon">+</span>
+        <span class="dropzone-text">Drag & drop or click to select a video</span>
+      </div>
+      <input type="file" id="videoFile" accept="video/*">
+      <!-- REMOVE: <div class="file-name" id="videoName"></div> -->
+    </div>
+    <!-- REMOVE this: <button class="upload-btn" onclick="uploadVideo()">Generate Meme</button> -->
+  </div>
+
+  <!-- Centered Generate Meme Button -->
+  <div class="generate-btn-row">
+    <button class="upload-btn" id="mainGenerateBtn" disabled>Generate Meme</button>
+  </div>
+
+</div>
+
+<!-- Custom Caption Modal -->
+<div id="captionModal" class="caption-modal">
+  <div class="caption-modal-content">
+    <h3>Custom Caption Settings</h3>
+    <div class="caption-input-section">
+      <label>Enter your custom caption:</label>
+      <textarea id="modalCaptionText" placeholder="Write your caption here..."></textarea>
+    </div>
+    <div class="timestamp-toggle">
+      <input type="checkbox" id="enableTimestamps" onchange="toggleModalTimestamps()">
+      <label for="enableTimestamps">Add timestamp-specific captions</label>
+    </div>
+    <div class="timestamp-inputs" id="modalTimestampInputs">
+      <div class="timestamp-row">
+        <input type="text" id="modalTimeInput" placeholder="Time (e.g., 0:30)">
+        <input type="text" id="modalTimestampText" placeholder="Caption for this timestamp">
+        <button class="add-timestamp" onclick="addModalTimestamp()">Add</button>
+      </div>
+      <div class="timestamps-preview" id="modalTimestampsList"></div>
+    </div>
+    <div class="caption-modal-buttons">
+      <button class="caption-modal-btn cancel-btn" onclick="closeCaptionModal()">Cancel</button>
+      <button class="caption-modal-btn save-btn" onclick="saveCaptionSettings()">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div id="resultModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div id="memeGallery"></div>
+
+<div id="loadingOverlay" class="loading-overlay" style="display:none;">
+  <div class="loading-content">
+    <div class="samsung-know-loader">
+      <div class="dot dot-tl"></div>
+      <div class="dot dot-tr"></div>
+      <div class="dot dot-bl"></div>
+      <div class="dot dot-br"></div>
+    </div>
+    <div class="loading-text">Processing, please wait...</div>
+  </div>
+</div>
+
+<!-- Place this inside your loading overlay -->
+
+<script src="script.js"></script>
+</body>
+</html>

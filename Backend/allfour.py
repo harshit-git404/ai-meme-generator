@@ -1,7 +1,6 @@
 import subprocess
 import argparse
 import sys
-
 def run_step(command, description):
     print(f"\n🚀 Running: {description} ...")
     result = subprocess.run(command, shell=True)
@@ -9,12 +8,10 @@ def run_step(command, description):
         print(f"❌ {description} failed! Stopping pipeline.")
         sys.exit(1)
     print(f"✅ {description} completed successfully.")
-
 def main():
     parser = argparse.ArgumentParser(description="Run full meme generator pipeline")
     parser.add_argument("--input", required=True, help="YouTube link or video file path")
     args = parser.parse_args()
-
     # Step 1: Run processPipeline with input
     run_step(f'python processPipeline.py --input "{args.input}"', "Process Pipeline")
 
@@ -28,6 +25,13 @@ def main():
     run_step("python memeOutput.py", "Meme Output")
 
     print("\n🎉 All steps completed successfully!")
+
+    # ==============================
+    # NEW: Custom caption step
+    # ==============================
+    choice = input("\n❓ Do you want to add custom captions at specific timestamps? (y/n): ").strip().lower()
+    if choice == "y":
+        run_step("python customCaption.py", "Custom Caption Generator")
 
 if __name__ == "__main__":
     main()
