@@ -18,7 +18,7 @@ os.makedirs(PHOTO_OUTPUT_DIR, exist_ok=True)
 # --------------------------
 # API Config for OpenRouter
 # --------------------------
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 HEADERS = {
     "Content-Type": "application/json",
@@ -190,20 +190,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a meme from a photo.")
     parser.add_argument("--input", type=str, required=True, help="Path to input photo")
     args = parser.parse_args()
-
+    # Generate once and exit (custom caption interactive flow removed)
     output_path = generate_photo_memes(args.input, PHOTO_OUTPUT_DIR)
     if output_path:
         print(f"Meme generated: {output_path}")
-        choice = input("Do you want to give a custom caption for a new meme? (y/n): ").strip().lower()
-        if choice == "y":
-            custom_caption = input("Enter your custom caption: ").strip()
-            if custom_caption:
-                output_path = generate_photo_memes(args.input, PHOTO_OUTPUT_DIR, custom_text=custom_caption)
-                if output_path:
-                    print(f"Meme regenerated with custom caption: {output_path}")
-                else:
-                    print("Custom meme generation failed.")
-            else:
-                print("No custom caption entered.")
     else:
         print("Meme generation failed.")

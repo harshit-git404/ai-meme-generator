@@ -293,16 +293,20 @@ document.addEventListener('DOMContentLoaded', () => {
         alert(message);
     }
 
-    function pollTaskStatus(task_id) {
+    function pollTaskStatus(task_id, uploadType) {
         fetch(`http://127.0.0.1:5000/status/${task_id}`)
             .then(res => res.json())
             .then(data => {
                 if (!data.ready) {
-                    setTimeout(() => pollTaskStatus(task_id), 1500);
+                    setTimeout(() => pollTaskStatus(task_id, uploadType), 1500);
                 } else {
                     showLoading(false);
                     if (data.success) {
-                        showOutputModal(data.memes); // Show output in a popup
+                        // Option A: show modal (current)
+                        // showOutputModal(data.memes);
+                        // Option B: redirect after completed (uncomment if desired)
+                        // window.location.href = `/results.html?task=${task_id}&type=${uploadType}`;
+                        showOutputModal(data.memes);
                     } else {
                         showStatus("Error: " + (data.error || "Unknown error"));
                     }
@@ -329,9 +333,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showStatus("Processing YouTube link...");
-                pollTaskStatus(data.task_id);
+                pollTaskStatus(data.task_id, 'youtube');
             } else {
+                showLoading(false);
                 showStatus("Error: " + (data.error || "Unknown error"));
             }
         })
@@ -354,9 +358,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showStatus("Processing photo...");
-                pollTaskStatus(data.task_id);
+                pollTaskStatus(data.task_id, 'photo');
             } else {
+                showLoading(false);
                 showStatus("Error: " + (data.error || "Unknown error"));
             }
         })
@@ -379,9 +383,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                showStatus("Processing video...");
-                pollTaskStatus(data.task_id);
+                pollTaskStatus(data.task_id, 'video');
             } else {
+                showLoading(false);
                 showStatus("Error: " + (data.error || "Unknown error"));
             }
         })
@@ -459,26 +463,19 @@ function showMemesPage(memes) {
       <div class="memes-page">
         <h2>Your Memes</h2>
         <div class="memes-grid">
-          ${memes.map((url, idx) => `
-            <div class="meme-card">
-              ${url.match(/\.(mp4|webm)$/) ? 
-                `<video src="${url}" controls></video>` :
-                `<img src="${url}" alt="Meme ${idx+1}">`
-              }
-              <button onclick="downloadMeme('${url}')">Download</button>
-              <button onclick="showCustomCaptionBox('${url}')">Custom Caption</button>
-            </div>
-          `).join('')}
+                    ${memes.map((url, idx) => `
+                        <div class="meme-card">
+                            ${url.match(/\.(mp4|webm)$/) ? 
+                                `<video src="${url}" controls></video>` :
+                                `<img src="${url}" alt="Meme ${idx+1}">`
+                            }
+                            <button onclick="downloadMeme('${url}')">Download</button>
+                            <!-- Custom caption feature disabled -->
+                        </div>
+                    `).join('')}
         </div>
       </div>
-      <div id="customCaptionModal" class="modal" style="display:none;">
-        <div class="modal-content">
-          <span class="close" onclick="closeCustomCaptionModal()">&times;</span>
-          <h3>Enter Custom Caption</h3>
-          <input type="text" id="customCaptionInput" placeholder="Your caption">
-          <button onclick="submitCustomCaption()">Submit</button>
-        </div>
-      </div>
+            <!-- Custom caption modal removed -->
     `;
     window.selectedMemeForCaption = null;
 }
@@ -492,38 +489,7 @@ function downloadMeme(url) {
     document.body.removeChild(a);
 }
 
-function showCustomCaptionBox(url) {
-    window.selectedMemeForCaption = url;
-    document.getElementById('customCaptionModal').style.display = 'flex';
-}
-
-function closeCustomCaptionModal() {
-    document.getElementById('customCaptionModal').style.display = 'none';
-}
-
-function submitCustomCaption() {
-    const caption = document.getElementById('customCaptionInput').value.trim();
-    const meme_file = window.selectedMemeForCaption;
-    if (!caption) return alert('Please enter a caption.');
-    fetch('http://127.0.0.1:5000/custom_caption', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            meme_file: meme_file,
-            caption: caption,
-            custom: 'y'
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            alert('Custom caption submitted!');
-            closeCustomCaptionModal();
-        } else {
-            alert('Error submitting caption.');
-        }
-    });
-}
+// Custom caption functionality disabled (showCustomCaptionBox, submitCustomCaption removed)
 
 function showOutputPage() {
     fetch('http://127.0.0.1:5000/get_memes')

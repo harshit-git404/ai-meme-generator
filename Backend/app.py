@@ -38,8 +38,12 @@ def process_input(task_id, input_path, input_type="video"):
             meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in files[:6]]
 
         elif input_type == "photo":
-            output_files = generate_photo_memes(input_path)
-            meme_files = [f"http://127.0.0.1:5000/outputs/photo_memes/{f}" for f in output_files]
+            output_path = generate_photo_memes(input_path)
+            if output_path:
+                filename = os.path.basename(output_path)
+                meme_files = [f"http://127.0.0.1:5000/outputs/photo_memes/{filename}"]
+            else:
+                meme_files = []
 
         tasks[task_id] = meme_files
 
@@ -114,6 +118,7 @@ def serve_output(filename):
     return send_from_directory(OUTPUT_DIR, filename)
 
 
+
 @app.route('/get_memes')
 def get_memes():
     meme_files = sorted(os.listdir(OUTPUT_DIR))[:6]
@@ -121,16 +126,12 @@ def get_memes():
     return jsonify({'memes': meme_urls})
 
 
-@app.route('/custom_caption', methods=['POST'])
-def custom_caption():
-    data = request.json
-    meme_file = data.get('meme_file')
-    caption = data.get('caption')
-    custom = data.get('custom')  # 'y' or 'n'
-    # Process the custom caption as needed
-    # ...
-    return jsonify({'success': True})
+
+
+## Custom caption functionality disabled intentionally.
+## Endpoint removed to simplify backend while feature is paused.
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Run without auto-reloader to avoid duplicate model loads
+    app.run(debug=False)

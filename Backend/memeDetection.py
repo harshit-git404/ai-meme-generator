@@ -66,7 +66,7 @@ Transcript:
 # --- Step 5: Run OpenAI (OpenRouter) model ---
 client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="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"
+    api_key="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"
 )
 
 response = client.chat.completions.create(

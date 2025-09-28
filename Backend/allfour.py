@@ -29,9 +29,9 @@ def main():
     # ==============================
     # NEW: Custom caption step
     # ==============================
-    choice = input("\n❓ Do you want to add custom captions at specific timestamps? (y/n): ").strip().lower()
-    if choice == "y":
-        run_step("python customCaption.py", "Custom Caption Generator")
+    # choice = input("\n❓ Do you want to add custom captions at specific timestamps? (y/n): ").strip().lower()
+    # if choice == "y":
+    #     run_step("python customCaption.py", "Custom Caption Generator")
 
 if __name__ == "__main__":
     main()
