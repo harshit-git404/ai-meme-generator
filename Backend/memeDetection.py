@@ -3,7 +3,7 @@ import json
 import glob
 import openai
 import re
-from APIKEY import api_key
+from APIKEY import openrouter_api_key
 
 OUTPUT_DIR = "outputs"
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "meme_moments.json")
@@ -67,7 +67,7 @@ Transcript:
 # --- Step 5: Run OpenAI (OpenRouter) model ---
 client = openai.OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key=api_key
+    api_key=openrouter_api_key
 )
 
 response = client.chat.completions.create(
