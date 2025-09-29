@@ -36,7 +36,7 @@
     display: flex;
     justify-content: center;
   }
-  .download-btn, .share-btn, .copy-btn {
+  .download-btn {
     background: linear-gradient(135deg, #0078ff, #00c3ff);
     color: white;
     border: none;
@@ -47,39 +47,12 @@
     transition: all 0.2s ease;
     margin: 0 4px;
   }
-  .download-btn:hover, .share-btn:hover, .copy-btn:hover {
+  .download-btn:hover {
     background: linear-gradient(135deg, #0064d6, #00b0eb);
     transform: scale(1.05);
   }
-  .share-btn {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
-  }
-  .share-btn:hover {
-    background: linear-gradient(135deg, #6d32d1, #4338ca);
-  }
-  .copy-btn {
-    background: linear-gradient(135deg, #059669, #10b981);
-  }
-  .copy-btn:hover {
-    background: linear-gradient(135deg, #047857, #0ea271);
-  }
-  .copy-notification {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    opacity: 0;
-    transition: all 0.3s ease;
-    z-index: 9999;
-  }
-  .copy-notification.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
+
+  
   .back-link {
     color: #4da3ff;
     text-decoration: none;

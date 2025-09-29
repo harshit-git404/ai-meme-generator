@@ -53,21 +53,46 @@ def process_input(task_id, input_path, input_type="video"):
                     latest_run_folder = run_folders[0]
                     latest_run_path = os.path.join(final_outputs_dir, latest_run_folder)
                     
-                    # Get image files from the latest run folder
+                    # Get both image and video files from the latest run folder
                     if os.path.exists(latest_run_path):
-                        files = [f for f in os.listdir(latest_run_path) 
-                               if os.path.isfile(os.path.join(latest_run_path, f)) and 
-                               f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
-                        files.sort(key=lambda x: os.path.getmtime(os.path.join(latest_run_path, x)), reverse=True)
-                        meme_files = [f"http://127.0.0.1:5000/outputs/final_outputs/{latest_run_folder}/{f}" for f in files[:6]]
+                        all_files = [f for f in os.listdir(latest_run_path) 
+                                 if os.path.isfile(os.path.join(latest_run_path, f))]
+                        
+                        # Separate images and videos
+                        image_files = [f for f in all_files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+                        video_files = [f for f in all_files if f.lower().endswith(('.mp4', '.webm'))]
+                        
+                        # Sort each type by modification time
+                        image_files.sort(key=lambda x: os.path.getmtime(os.path.join(latest_run_path, x)), reverse=True)
+                        video_files.sort(key=lambda x: os.path.getmtime(os.path.join(latest_run_path, x)), reverse=True)
+                        
+                        # Take top 3 of each type
+                        top_images = image_files[:3]
+                        top_videos = video_files[:3]
+                        
+                        # Combine the results
+                        meme_files = [f"http://127.0.0.1:5000/outputs/final_outputs/{latest_run_folder}/{f}" 
+                                    for f in (top_images + top_videos)]
             
             # If no files found in the final_outputs, fall back to the main output directory
             if not meme_files:
-                files = [f for f in os.listdir(OUTPUT_DIR) 
-                       if os.path.isfile(os.path.join(OUTPUT_DIR, f)) and 
-                       f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-                files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
-                meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in files[:6]]
+                all_files = [f for f in os.listdir(OUTPUT_DIR) 
+                         if os.path.isfile(os.path.join(OUTPUT_DIR, f))]
+                
+                # Separate images and videos
+                image_files = [f for f in all_files if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+                video_files = [f for f in all_files if f.lower().endswith(('.mp4', '.webm'))]
+                
+                # Sort each type by modification time
+                image_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
+                video_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
+                
+                # Take top 3 of each type
+                top_images = image_files[:3]
+                top_videos = video_files[:3]
+                
+                # Combine the results
+                meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in (top_images + top_videos)]
 
         elif input_type == "photo":
             output_path = generate_photo_memes(input_path)
@@ -211,7 +236,7 @@ def get_all_memes():
             if os.path.exists(latest_run_path):
                 files = [f for f in os.listdir(latest_run_path) 
                        if os.path.isfile(os.path.join(latest_run_path, f)) and 
-                       f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))]
+                       f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.mp4', '.webm'))]
                 
                 for f in files:
                     file_path = os.path.join(latest_run_path, f)
@@ -243,9 +268,19 @@ def get_all_memes():
             url = f"http://127.0.0.1:5000/outputs/photo_memes/{f}"
             all_memes.append((url, mtime))
     
-    # Sort by modification time (newest first) and take top 6
+    # Sort by modification time (newest first)
     all_memes.sort(key=lambda x: x[1], reverse=True)
-    top_memes = [url for url, _ in all_memes[:6]]
+    
+    # Separate images and videos
+    images = [(url, time) for url, time in all_memes if not url.lower().endswith(('.mp4', '.webm'))]
+    videos = [(url, time) for url, time in all_memes if url.lower().endswith(('.mp4', '.webm'))]
+    
+    # Take top 3 of each type
+    top_images = [url for url, _ in images[:3]]
+    top_videos = [url for url, _ in videos[:3]]
+    
+    # Combine and return both types
+    top_memes = top_images + top_videos
     
     return jsonify({'memes': top_memes})
 

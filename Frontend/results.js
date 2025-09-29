@@ -110,8 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     <div class="meme-actions">
                         <button class="download-btn" onclick="downloadMeme('${url}')">Download</button>
-                        <button class="share-btn" onclick="shareMeme('${url}')">Share</button>
-                        <button class="copy-btn" onclick="copyMemeLink('${url}')">Copy Link</button>
+                       
                     </div>
                 </div>
             `;
