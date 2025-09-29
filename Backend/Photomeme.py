@@ -8,6 +8,7 @@ import requests
 import json
 import torch
 from transformers import BlipProcessor, BlipForConditionalGeneration
+from APIKEY import api_key
 
 # --------------------------
 # Directories
@@ -18,7 +19,7 @@ os.makedirs(PHOTO_OUTPUT_DIR, exist_ok=True)
 # --------------------------
 # API Config for OpenRouter
 # --------------------------
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = api_key
 BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
 HEADERS = {
     "Content-Type": "application/json",

@@ -48,11 +48,18 @@ for i, moment in enumerate(meme_moments):
         "-frames:v", "1", frame_path
     ])
 
-    # Extract short clip
+    # Extract short clip with proper re-encoding
     clip_path = os.path.join(CLIPS_DIR, f"meme_{i+1}.mp4")
     subprocess.run([
-        "ffmpeg", "-y", "-ss", str(start), "-t", str(duration), "-i", VIDEO_FILE,
-        "-c", "copy", clip_path
+        "ffmpeg", "-y", 
+        "-ss", str(start),
+        "-t", str(duration),
+        "-i", VIDEO_FILE,
+        "-c:v", "libx264",  # Re-encode video
+        "-c:a", "aac",      # Re-encode audio
+        "-preset", "fast",  # Fast encoding
+        "-movflags", "+faststart",  # Enable fast web playback
+        clip_path
     ])
 
     print(f"✅ Extracted frame {frame_path} and clip {clip_path}")
