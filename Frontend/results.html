@@ -30,13 +30,20 @@
   .meme-card img, .meme-card video {
     width: 100%;
     display: block;
+    min-height: 200px;
+    max-height: 400px;
+    background-color: #000;
+  }
+  
+  .meme-card video {
+    object-fit: contain;
   }
   .meme-actions {
     padding: 16px;
     display: flex;
     justify-content: center;
   }
-  .download-btn {
+  .view-btn {
     background: linear-gradient(135deg, #0078ff, #00c3ff);
     color: white;
     border: none;
@@ -47,9 +54,58 @@
     transition: all 0.2s ease;
     margin: 0 4px;
   }
-  .download-btn:hover {
+  .view-btn:hover {
     background: linear-gradient(135deg, #0064d6, #00b0eb);
     transform: scale(1.05);
+  }
+  
+  .download-btn {
+    background: linear-gradient(135deg, #6b47d1, #9747ff);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 0 4px;
+  }
+  .download-btn:hover {
+    background: linear-gradient(135deg, #5a3cb3, #8133ff);
+    transform: scale(1.05);
+  }
+
+  .share-btn {
+    background: linear-gradient(135deg, #00b341, #00d38f);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin: 0 4px;
+  }
+
+  .share-btn:hover {
+    background: linear-gradient(135deg, #009935, #00bf82);
+    transform: scale(1.05);
+  }
+
+  .copy-notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    transition: transform 0.3s ease;
+  }
+
+  .copy-notification.show {
+    transform: translateX(-50%) translateY(0);
   }
 
   

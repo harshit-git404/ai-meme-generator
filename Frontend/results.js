@@ -105,12 +105,23 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
                 <div class="meme-card">
                     ${isVideo 
-                        ? `<video src="${url}" controls preload="metadata" poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M8 5v14l11-7z' fill='%23ffffff'/%3E%3C/svg%3E"></video>` 
+                        ? `<video 
+                            width="100%" 
+                            height="auto" 
+                            controls 
+                            crossorigin="anonymous"
+                            preload="metadata"
+                            style="background: #000;"
+                          >
+                            <source src="${url}" type="${url.toLowerCase().endsWith('.mp4') ? 'video/mp4' : 'video/webm'}">
+                            Your browser does not support the video tag.
+                          </video>` 
                         : `<img src="${url}" alt="Meme ${index + 1}" loading="lazy">`
                     }
                     <div class="meme-actions">
+                        <button class="view-btn" onclick="openMeme('${url}')">View</button>
                         <button class="download-btn" onclick="downloadMeme('${url}')">Download</button>
-                       
+                        <button class="share-btn" onclick="shareMeme('${url}')">Share</button>
                     </div>
                 </div>
             `;
@@ -118,37 +129,83 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Open the meme in a new tab
+function openMeme(url) {
+    window.open(url, '_blank');
+}
+
 // Download the meme
 function downloadMeme(url) {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = url.split('/').pop();
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const a = document.createElement('a');
+            const url = window.URL.createObjectURL(blob);
+            a.href = url;
+            a.download = url.split('/').pop();
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        })
+        .catch(error => {
+            console.error('Error downloading file:', error);
+            alert('Failed to download the file. Please try again.');
+        });
 }
 
 // Share meme (using Web Share API if available)
-function shareMeme(url) {
-    if (navigator.share) {
-        navigator.share({
-            title: 'Check out this AI-generated meme!',
-            text: 'Here\'s a meme I created with AI Meme Generator',
-            url: url,
-        })
-        .catch(error => {
-            console.error('Error sharing:', error);
+async function shareMeme(url) {
+    try {
+        // Fetch the image/video file
+        const response = await fetch(url);
+        const blob = await response.blob();
+        
+        // Determine the file type and name
+        const isVideo = url.match(/\.(mp4|webm)$/i);
+        const fileName = url.split('/').pop();
+        const fileType = isVideo ? 'video/mp4' : 'image/jpeg';
+        
+        // Create a File object from the blob
+        const file = new File([blob], fileName, { type: fileType });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            // Share the actual file if supported
+            await navigator.share({
+                title: 'Check out this AI-generated meme!',
+                text: 'Here\'s a meme I created with AI Meme Generator',
+                files: [file]
+            });
+        } else if (navigator.share) {
+            // Fallback to URL sharing if file sharing not supported
+            await navigator.share({
+                title: 'Check out this AI-generated meme!',
+                text: 'Here\'s a meme I created with AI Meme Generator',
+                url: url
+            });
+        } else {
+            // Fallback for browsers that don't support sharing
             fallbackShare(url);
-        });
-    } else {
+        }
+    } catch (error) {
+        console.error('Error sharing:', error);
         fallbackShare(url);
     }
 }
 
 // Fallback share method
 function fallbackShare(url) {
+    // Try to download the file directly
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = url.split('/').pop();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // Also copy the link as backup
     copyMemeLink(url);
-    alert('Link copied to clipboard. You can now paste and share it!');
+    alert('Meme downloaded and link copied to clipboard!');
 }
 
 // Copy meme link to clipboard
