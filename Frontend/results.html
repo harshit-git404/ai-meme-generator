@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Meme Results</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 <style>
   .results-container {
     max-width: 1200px;
@@ -43,53 +44,71 @@
     display: flex;
     justify-content: center;
   }
-  .view-btn {
-    background: linear-gradient(135deg, #0078ff, #00c3ff);
+  .meme-actions button {
     color: white;
     border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
-    font-weight: 500;
     transition: all 0.2s ease;
-    margin: 0 4px;
+    margin: 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+  }
+
+  .meme-actions button:hover {
+    transform: scale(1.1);
+  }
+
+  .view-btn {
+    background: linear-gradient(135deg, #0078ff, #00c3ff);
   }
   .view-btn:hover {
     background: linear-gradient(135deg, #0064d6, #00b0eb);
-    transform: scale(1.05);
   }
   
   .download-btn {
     background: linear-gradient(135deg, #6b47d1, #9747ff);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    margin: 0 4px;
   }
   .download-btn:hover {
     background: linear-gradient(135deg, #5a3cb3, #8133ff);
-    transform: scale(1.05);
   }
 
   .share-btn {
     background: linear-gradient(135deg, #00b341, #00d38f);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    margin: 0 4px;
   }
-
   .share-btn:hover {
     background: linear-gradient(135deg, #009935, #00bf82);
-    transform: scale(1.05);
+  }
+
+  /* Tooltip styles */
+  .meme-actions button {
+    position: relative;
+  }
+
+  .meme-actions button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .meme-actions button:hover::after {
+    opacity: 1;
+    visibility: visible;
   }
 
   .copy-notification {

@@ -119,9 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         : `<img src="${url}" alt="Meme ${index + 1}" loading="lazy">`
                     }
                     <div class="meme-actions">
-                        <button class="view-btn" onclick="openMeme('${url}')">View</button>
-                        <button class="download-btn" onclick="downloadMeme('${url}')">Download</button>
-                        <button class="share-btn" onclick="shareMeme('${url}')">Share</button>
+                        <button class="view-btn" onclick="openMeme('${url}')" data-tooltip="View">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="download-btn" onclick="downloadMeme('${url}')" data-tooltip="Download">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="share-btn" onclick="shareMeme('${url}')" data-tooltip="Share">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
                     </div>
                 </div>
             `;
