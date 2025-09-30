@@ -98,6 +98,7 @@ h2 {
 .upload-box {
   background: rgba(255,255,255,0.07);
   border-radius: 18px;
+  border: 2px solid transparent;
   box-shadow: 0 2px 16px rgba(0,0,0,0.06);
   padding: 28px 22px 22px 22px;
   margin: 0 auto;
@@ -105,10 +106,17 @@ h2 {
   flex-direction: column;
   align-items: stretch;
   min-width: 0;
-  transition: box-shadow 0.2s, background 0.2s;
+  transition: all 0.3s ease;
   position: relative;
   max-width: 380px;
   width: 100%;
+}
+
+.upload-box:hover {
+  border-color: #00c3ff;
+  box-shadow: 0 0 20px rgba(0, 195, 255, 0.3),
+              0 0 40px rgba(0, 195, 255, 0.1);
+  transform: translateY(-2px);
 }
 
 /* Place boxes: photo left, youtube center, video right */
@@ -321,15 +329,18 @@ body, .container, .upload-box, .input-section, .dropzone-input, .refresh-btn, .u
   position: fixed;
   z-index: 9999;
   inset: 0;
-  background: rgba(10, 20, 40, 0.82);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(3px);
 }
 .loading-content {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 40px;
+  border-radius: 16px;
 }
 .samsung-loader {
   width: 80px;
@@ -338,8 +349,9 @@ body, .container, .upload-box, .input-section, .dropzone-input, .refresh-btn, .u
 }
 .loading-text {
   color: #fff;
-  font-size: 1.2rem;
+  font-size: 1.1em;
   font-weight: 500;
+  text-align: center;
   letter-spacing: 0.02em;
 }
 
@@ -440,46 +452,119 @@ body, .container, .upload-box, .input-section, .dropzone-input, .refresh-btn, .u
   grid-column: 1 / -1; /* If using grid */
 }
 /*   Loader   */
-.samsung-know-loader {
-  width: 64px;
-  height: 64px;
-  position: relative;
-  margin-bottom: 18px;
+.loader {
+    width: 80px;
+    height: 80px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 18px;
 }
 
-.samsung-know-loader .dot {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: #0078ff;
-  transition: background 0.2s;
+.dot-ring {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    animation: rotate-ring 2s linear infinite;
 }
 
-/* Dot positions */
-.samsung-know-loader .dot-tl { top: 0; left: 0; }
-.samsung-know-loader .dot-tr { top: 0; right: 0; }
-.samsung-know-loader .dot-bl { bottom: 0; left: 0; }
-.samsung-know-loader .dot-br { bottom: 0; right: 0; }
-
-/* Animation keyframes */
-@keyframes cyan-dot-move {
-  0%   { transform: translate(0, 0); }
-  12.5% { transform: translate(0, 0); }
-  25%  { transform: translate(0, -46px); }
-  37.5% { transform: translate(0, -46px); }
-  50%  { transform: translate(46px, -46px); }
-  62.5% { transform: translate(46px, -46px); }
-  75%  { transform: translate(46px, 0); }
-  87.5% { transform: translate(46px, 0); }
-  100% { transform: translate(0, 0); }
+.dot-ring .dot {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #3498db;
 }
 
-/* The cyan dot starts at bottom-left and moves clockwise */
-.samsung-know-loader .dot-bl {
-  background: #00c3ff;
-  z-index: 2;
-  animation: cyan-dot-move 1.2s cubic-bezier(.6,0,.4,1) infinite;
+/* Position dots in a circle */
+.dot-ring .dot:nth-child(1) {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: chase 2s linear infinite, depth1 2s linear infinite;
+    animation-delay: 0s;
+}
+
+.dot-ring .dot:nth-child(2) {
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    animation: chase 2s linear infinite, depth2 2s linear infinite;
+    animation-delay: -0.5s;
+}
+
+.dot-ring .dot:nth-child(3) {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: chase 2s linear infinite, depth3 2s linear infinite;
+    animation-delay: -1s;
+}
+
+.dot-ring .dot:nth-child(4) {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    animation: chase 2s linear infinite, depth4 2s linear infinite;
+    animation-delay: -1.5s;
+}
+
+/* Depth animations for each dot */
+@keyframes depth1 {
+    0% { transform: translateX(-50%) scale(0.5); opacity: 0.3; }
+    25% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+    50% { transform: translateX(-50%) scale(1); opacity: 1; }
+    75% { transform: translateX(-50%) scale(1); opacity: 1; }
+    100% { transform: translateX(-50%) scale(0.5); opacity: 0.3; }
+}
+
+@keyframes depth2 {
+    0% { transform: translateY(-50%) scale(1); opacity: 1; }
+    25% { transform: translateY(-50%) scale(0.5); opacity: 0.3; }
+    50% { transform: translateY(-50%) scale(1.2); opacity: 1; }
+    75% { transform: translateY(-50%) scale(1); opacity: 1; }
+    100% { transform: translateY(-50%) scale(1); opacity: 1; }
+}
+
+@keyframes depth3 {
+    0% { transform: translateX(-50%) scale(1); opacity: 1; }
+    25% { transform: translateX(-50%) scale(1); opacity: 1; }
+    50% { transform: translateX(-50%) scale(0.5); opacity: 0.3; }
+    75% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+@keyframes depth4 {
+    0% { transform: translateY(-50%) scale(1); opacity: 1; }
+    25% { transform: translateY(-50%) scale(1); opacity: 1; }
+    50% { transform: translateY(-50%) scale(1); opacity: 1; }
+    75% { transform: translateY(-50%) scale(0.5); opacity: 0.3; }
+    100% { transform: translateY(-50%) scale(1.2); opacity: 1; }
+}
+
+@keyframes rotate-ring {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes chase {
+    0%, 100% {
+        background-color: #1abc9c;
+        transform: scale(1);
+    }
+    25% {
+        background-color: #3498db;
+        transform: scale(0.6);
+    }
+    50% {
+        background-color: #3498db;
+        transform: scale(1.3);
+    }
+    75% {
+        background-color: #3498db;
+        transform: scale(0.6);
+    }
 }
 
 /* The other dots are always blue, but their position is "replaced" by the cyan dot as it animates */

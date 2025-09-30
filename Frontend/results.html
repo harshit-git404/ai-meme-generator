@@ -17,6 +17,8 @@
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
     margin-top: 30px;
+    width: 100%;
+    padding: 0 20px;
   }
   .meme-card {
     background: rgba(255, 255, 255, 0.05);
@@ -148,6 +150,71 @@
     padding: 50px 0;
     color: #999;
   }
+  #loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .samsung-know-loader {
+    width: 80px;
+    height: 80px;
+    position: relative;
+  }
+  .dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #0044cc;
+    position: absolute;
+    transition: background-color 0s;
+  }
+  .dot.active {
+    background-color: #00c3ff;
+  }
+  .dot-bl { bottom: 0; left: 0; }
+  .dot-tl { top: 0; left: 0; }
+  .dot-tr { top: 0; right: 0; }
+  .dot-br { bottom: 0; right: 0; }
+
+  @keyframes dotPosition {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(0, -64px); }
+    50% { transform: translate(64px, -64px); }
+    75% { transform: translate(64px, 0); }
+    100% { transform: translate(0, 0); }
+  }
+
+  .dot.moving {
+    animation: dotPosition 2s steps(1) infinite;
+  }
+
+  .loading-text {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #fff;
+    text-align: center;
+  }
+  .results-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .results-grid {
+    flex: 1;
+    margin-bottom: 30px;
+  }
+  .result-actions {
+    margin-top: auto;
+    padding-bottom: 30px;
+  }
   .result-actions {
     display: flex;
     justify-content: center;
@@ -155,21 +222,7 @@
     margin-top: 30px;
     gap: 20px;
   }
-  .refresh-results {
-    background: linear-gradient(135deg, #0078ff, #00c3ff);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    font-size: 1rem;
-  }
-  .refresh-results:hover {
-    background: linear-gradient(135deg, #0064d6, #00b0eb);
-    transform: translateY(-2px);
-  }
+
 </style>
 </head>
 <body>
@@ -185,11 +238,13 @@
 <div class="results-container">
   <h2>Your Generated Memes</h2>
   <div id="loading">
-    <div class="samsung-know-loader">
-      <div class="dot dot-tl"></div>
-      <div class="dot dot-tr"></div>
-      <div class="dot dot-bl"></div>
-      <div class="dot dot-br"></div>
+    <div class="loader">
+      <div class="dot-ring">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
     </div>
     <div class="loading-text">Loading your memes...</div>
   </div>

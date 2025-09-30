@@ -276,8 +276,8 @@ def get_all_memes():
     videos = [(url, time) for url, time in all_memes if url.lower().endswith(('.mp4', '.webm'))]
     
     # Take top 3 of each type
-    top_images = [url for url, _ in images[:3]]
-    top_videos = [url for url, _ in videos[:3]]
+    top_images = [url for url, _ in images[:]]
+    top_videos = [url for url, _ in videos[:]]
     
     # Combine and return both types
     top_memes = top_images + top_videos

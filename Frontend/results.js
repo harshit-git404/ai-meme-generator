@@ -7,20 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loading = document.getElementById('loading');
     const resultsGrid = document.getElementById('resultsGrid');
-    const refreshBtn = document.getElementById('refreshBtn');
-    
-    // Set up refresh button
-    if (refreshBtn) {
-        refreshBtn.addEventListener('click', () => {
-            loading.style.display = 'block';
-            resultsGrid.innerHTML = '';
-            if (taskId) {
-                pollTaskStatus(taskId);
-            } else {
-                fetchAllMemes();
-            }
-        });
-    }
     
     // If task_id is provided, poll for status
     if (taskId) {
