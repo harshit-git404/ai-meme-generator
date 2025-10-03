@@ -30,7 +30,7 @@
   .meme-card:hover {
     transform: translateY(-5px);
   }
-  .meme-card img, .meme-card video {
+  .meme-card img {
     width: 100%;
     display: block;
     min-height: 200px;
@@ -39,7 +39,7 @@
   }
   
   .meme-card video {
-    object-fit: contain;
+    display: none;
   }
   .meme-actions {
     padding: 16px;
@@ -223,6 +223,47 @@
     gap: 20px;
   }
 
+  .video-download-box {
+    background: rgba(0, 195, 255, 0.1);
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: white;
+    border: 2px dashed rgba(0, 195, 255, 0.3);
+    margin: 10px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+
+  .video-download-box:hover {
+    border-color: rgba(0, 195, 255, 0.6);
+    background: rgba(0, 195, 255, 0.15);
+  }
+
+  .video-download-box i {
+    font-size: 3em;
+    color: #00c3ff;
+    margin-bottom: 15px;
+  }
+
+  .video-download-box p {
+    margin: 5px 0;
+    text-align: center;
+  }
+
+  .video-download-box p:first-of-type {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #00c3ff;
+  }
+
+  .video-download-box p:last-of-type {
+    font-size: 0.9em;
+    opacity: 0.8;
+  }
 </style>
 </head>
 <body>

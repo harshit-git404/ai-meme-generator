@@ -67,13 +67,13 @@ def process_input(task_id, input_path, input_type="video"):
                         video_files.sort(key=lambda x: os.path.getmtime(os.path.join(latest_run_path, x)), reverse=True)
                         
                         # Take top 3 of each type
-                        top_images = image_files[:3]
-                        top_videos = video_files[:3]
+                        top_images = image_files  # Changed from image_files[:3]
+                        top_videos = video_files  # Changed from video_files[:3]
                         
                         # Combine the results
                         meme_files = [f"http://127.0.0.1:5000/outputs/final_outputs/{latest_run_folder}/{f}" 
                                     for f in (top_images + top_videos)]
-            
+
             # If no files found in the final_outputs, fall back to the main output directory
             if not meme_files:
                 all_files = [f for f in os.listdir(OUTPUT_DIR) 
@@ -88,8 +88,8 @@ def process_input(task_id, input_path, input_type="video"):
                 video_files.sort(key=lambda x: os.path.getmtime(os.path.join(OUTPUT_DIR, x)), reverse=True)
                 
                 # Take top 3 of each type
-                top_images = image_files[:3]
-                top_videos = video_files[:3]
+                top_images = image_files  # Changed from image_files[:3]
+                top_videos = video_files  # Changed from video_files[:3]
                 
                 # Combine the results
                 meme_files = [f"http://127.0.0.1:5000/outputs/{f}" for f in (top_images + top_videos)]

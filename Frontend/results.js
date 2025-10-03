@@ -91,23 +91,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return `
                 <div class="meme-card">
                     ${isVideo 
-                        ? `<video 
-                            width="100%" 
-                            height="auto" 
-                            controls 
-                            crossorigin="anonymous"
-                            preload="metadata"
-                            style="background: #000;"
-                          >
-                            <source src="${url}" type="${url.toLowerCase().endsWith('.mp4') ? 'video/mp4' : 'video/webm'}">
-                            Your browser does not support the video tag.
-                          </video>` 
+                        ? `<div class="video-download-box">
+                             <i class="fas fa-video"></i>
+                             <p>Video Meme Ready!</p>
+                             <p>Click below to download</p>
+                           </div>` 
                         : `<img src="${url}" alt="Meme ${index + 1}" loading="lazy">`
                     }
                     <div class="meme-actions">
-                        <button class="view-btn" onclick="openMeme('${url}')" data-tooltip="View">
-                            <i class="fas fa-eye"></i>
-                        </button>
+                        ${!isVideo ? `
+                            <button class="view-btn" onclick="openMeme('${url}')" data-tooltip="View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        ` : ''}
                         <button class="download-btn" onclick="downloadMeme('${url}')" data-tooltip="Download">
                             <i class="fas fa-download"></i>
                         </button>
@@ -223,4 +219,70 @@ function copyMemeLink(url) {
             setTimeout(() => document.body.removeChild(notification), 300);
         }, 1500);
     }, 10);
+}
+
+function createMemeCard(url) {
+    const card = document.createElement('div');
+    card.className = 'meme-card';
+    
+    const isVideo = url.match(/\.(mp4|webm)$/i);
+    
+    if (isVideo) {
+        // Create download box for videos
+        const downloadBox = document.createElement('div');
+        downloadBox.className = 'video-download-box';
+        downloadBox.innerHTML = `
+            <i class="fas fa-video"></i>
+            <p>Video Meme Ready!</p>
+            <p>Click below to download</p>
+        `;
+        card.appendChild(downloadBox);
+
+        // For videos, only add download button
+        const actions = document.createElement('div');
+        actions.className = 'meme-actions';
+
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'download-btn';
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+        downloadBtn.setAttribute('data-tooltip', 'Download');
+        downloadBtn.onclick = () => downloadMeme(url);
+        actions.appendChild(downloadBtn);
+
+        card.appendChild(actions);
+    } else {
+        // For images, show preview and all buttons
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Generated Meme';
+        card.appendChild(img);
+
+        const actions = document.createElement('div');
+        actions.className = 'meme-actions';
+
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'view-btn';
+        viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+        viewBtn.setAttribute('data-tooltip', 'View');
+        viewBtn.onclick = () => openMeme(url);
+        actions.appendChild(viewBtn);
+
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'download-btn';
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+        downloadBtn.setAttribute('data-tooltip', 'Download');
+        downloadBtn.onclick = () => downloadMeme(url);
+        actions.appendChild(downloadBtn);
+
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'share-btn';
+        shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+        shareBtn.setAttribute('data-tooltip', 'Share');
+        shareBtn.onclick = () => shareMeme(url);
+        actions.appendChild(shareBtn);
+
+        card.appendChild(actions);
+    }
+
+    return card;
 }
