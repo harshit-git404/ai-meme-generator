@@ -40,7 +40,7 @@ Video Processing Pipeline:
 3.Creation (Photomeme.py): The generated caption is rendered onto a canvas above the original image using the Pillow library to create the final meme.
 
 # **🚀 Technology Stack**
-*Category*	                            *Technologies*
+# *Category*	                        *Technologies*
 
 Backend & Orchestration	                Python, Flask 
 
@@ -90,6 +90,7 @@ Ensure you have the impact.ttf font in a fonts directory or update the path in m
 # **Running the Application**
 1.Start the Flask Backend:
 Open a terminal and run the main application file.
+Bash
 python app.py
 The server will start on http://127.0.0.1:5000.
 
