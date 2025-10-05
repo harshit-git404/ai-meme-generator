@@ -83,9 +83,7 @@ pip install -r requirements.txt
 Open the APIKEY.py file.
 Replace the placeholder key with your actual OpenRouter API key.
 openrouter_api_key = "YOUR_OPENROUTER_API_KEY"
-
-5.Download necessary fonts:
-Ensure you have the impact.ttf font in a fonts directory or update the path in memeOutput.py and Photomeme.py.
+Visit https://openrouter.ai/settings/keys for and generate an API key.
 
 # **Running the Application**
 1.Start the Flask Backend:
