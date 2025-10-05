@@ -40,19 +40,19 @@ Video Processing Pipeline:
 3.Creation (Photomeme.py): The generated caption is rendered onto a canvas above the original image using the Pillow library to create the final meme.
 
 # **🚀 Technology Stack**
-# *Category*	                        *Technologies*
+# *Category*	                            *Technologies*
 
-Backend & Orchestration	                Python, Flask 
+Backend & Orchestration: 	                Python, Flask 
 
-AI & Machine Learning	                OpenAI (GPT-3.5, GPT-4o-mini),
-                                        Hugging Face Transformers (BLIP), PyTorch, Whisper 
+AI & Machine Learning:  	                OpenAI (GPT-3.5, GPT-4o-mini),
+                                            Hugging Face Transformers (BLIP), PyTorch, Whisper 
 
-Media Processing	                    FFmpeg, OpenCV, Pillow (PIL) 
+Media Processing:      	                    FFmpeg, OpenCV, Pillow (PIL) 
 
-Frontend	                            HTML5, CSS3, JavaScript
+Frontend: 	                                HTML5, CSS3, JavaScript
 
-Architecture	                        Asynchronous Task Processing  
-                                        (Threading), RESTful API 
+Architecture: 	                            Asynchronous Task Processing  
+                                            (Threading), RESTful API 
 
 # **⚙️ Setup and Installation**
 Follow these steps to get the project running on your local machine.
@@ -102,7 +102,7 @@ You can now upload a photo, video, or YouTube link to start generating memes!
 
 **🤝 Team Prometheus**
 
-Abhiram Yanamadala (Team Leader) 
+Abhiram Yanamadala (Team Leader)
 Sai Yatin
-Harshit Singh 
-Roshan Bilal 
+Harshit Singh
+Roshan Bilal
